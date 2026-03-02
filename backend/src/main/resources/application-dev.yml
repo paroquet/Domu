@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:./data/domu.db
+  jpa:
+    show-sql: true
+
+app:
+  upload:
+    dir: ./data/uploads
+  base-url: http://localhost:8080
