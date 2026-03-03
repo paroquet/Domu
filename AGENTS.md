@@ -308,4 +308,146 @@ GET    /api/v1/orders/shopping-plan?date=YYYY-MM-DD # 聚合买菜清单
 
 ---
 
+## 测试策略
+
+### 测试分层
+
+```
+┌────────────────────────────────────────────────────┐
+│  集成测试 @SpringBootTest(webEnvironment=RANDOM_PORT)│
+│  端到端 HTTP 流程（注册→登录→业务操作）               │
+├────────────────────────────────────────────────────┤
+│  切片测试                                            │
+│  @WebMvcTest  Controller + Security + MockMvc       │
+│  @DataJpaTest Repository + JPA + SQLite In-Memory   │
+├────────────────────────────────────────────────────┤
+│  模块测试（Unit Test）纯 JUnit 5 + MockK             │
+│  Service 业务逻辑，不启动 Spring Context             │
+└────────────────────────────────────────────────────┘
+```
+
+### 依赖
+
+```kotlin
+// build.gradle.kts
+testImplementation("io.mockk:mockk:1.13.12")
+testImplementation("com.ninja-squad:springmockk:4.0.2")
+```
+
+### 模块测试（Unit Test）
+
+- 工具：`MockKExtension` + `@MockK` + `@InjectMockKs`
+- 不启动 Spring Context，速度最快
+- 覆盖范围：Service 业务逻辑、权限判断、边界条件
+- 文件位置：`src/test/kotlin/com/domu/unit/`
+
+```kotlin
+@ExtendWith(MockKExtension::class)
+class AuthServiceTest {
+    @MockK lateinit var userRepository: UserRepository
+    @MockK lateinit var passwordEncoder: PasswordEncoder
+    @InjectMockKs lateinit var authService: AuthService
+    // ...
+}
+```
+
+### Controller 切片测试（@WebMvcTest）
+
+- 只加载 Web 层（Controller + SecurityConfig + JWT Filter）
+- Service 层全部用 `@MockkBean` 替代
+- 认证：通过 `JwtTokenProvider` 生成真实 JWT，以 `access_token` Cookie 注入请求
+- `UserRepository` 需 `@MockkBean`（供 `UserDetailsServiceImpl` 使用）
+- 文件位置：`src/test/kotlin/com/domu/slice/controller/`
+
+```kotlin
+@WebMvcTest(FamilyController::class)
+@Import(SecurityConfig::class, JwtTokenProvider::class,
+        JwtAuthenticationFilter::class, UserDetailsServiceImpl::class, AppConfig::class)
+class FamilyControllerTest {
+    @Autowired lateinit var mockMvc: MockMvc
+    @Autowired lateinit var jwtTokenProvider: JwtTokenProvider
+    @MockkBean lateinit var familyService: FamilyService
+    @MockkBean lateinit var userRepository: UserRepository
+    // 通过 Cookie 注入 JWT
+}
+```
+
+### Repository 切片测试（@DataJpaTest）
+
+- 只加载 JPA 层，不启动 Web 层
+- SQLite 内存模式：`jdbc:sqlite::memory:`，需关闭自动替换 H2
+- 用 `TestEntityManager` 准备测试数据
+- 文件位置：`src/test/kotlin/com/domu/slice/repository/`
+
+```kotlin
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@TestPropertySource(properties = [
+    "spring.datasource.url=jdbc:sqlite::memory:",
+    "spring.jpa.database-platform=org.hibernate.community.dialect.SQLiteDialect"
+])
+class UserRepositoryTest {
+    @Autowired lateinit var userRepository: UserRepository
+    @Autowired lateinit var entityManager: TestEntityManager
+}
+```
+
+### 集成测试（@SpringBootTest）
+
+- 启动完整 Spring Context + SQLite 内存库，随机端口
+- 使用 `TestRestTemplate` 发送真实 HTTP 请求
+- 验证端到端流程（Cookie、状态码、响应体）
+- 文件位置：`src/test/kotlin/com/domu/integration/`
+
+```kotlin
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = [
+    "spring.datasource.url=jdbc:sqlite::memory:",
+    "app.jwt.secret=test-secret-key-that-is-at-least-32-chars-long",
+    "app.upload.dir=/tmp/domu-test-uploads",
+    "app.base-url=http://localhost:8080"
+])
+class AuthIntegrationTest {
+    @Autowired lateinit var restTemplate: TestRestTemplate
+}
+```
+
+### 测试文件结构
+
+```
+src/test/kotlin/com/domu/
+├── DomuApplicationTests.kt          # Context 加载冒烟测试
+├── unit/
+│   └── service/
+│       ├── AuthServiceTest.kt
+│       ├── FamilyServiceTest.kt
+│       └── FamilyAuthServiceTest.kt
+├── slice/
+│   ├── controller/
+│   │   ├── AuthControllerTest.kt
+│   │   └── FamilyControllerTest.kt
+│   └── repository/
+│       ├── UserRepositoryTest.kt
+│       └── FamilyMemberRepositoryTest.kt
+└── integration/
+    ├── AuthIntegrationTest.kt
+    └── FamilyIntegrationTest.kt
+```
+
+### 测试方法
+
+```
+cd backend
+# 运行所有测试
+./gradlew test
+# 只运行指定测试类
+./gradlew test --tests "com.domu.unit.service.AuthServiceTest"
+# 匹配类名包含 Auth 的所有测试类
+./gradlew test --tests "*邮箱未注册时成功创建用户*"
+# 运行后查看报告（HTML 格式）
+open build/reports/tests/test/index.html
+```
+
+---
+
 ## 注意事项

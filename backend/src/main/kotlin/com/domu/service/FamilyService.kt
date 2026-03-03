@@ -12,6 +12,7 @@ import com.domu.repository.FamilyRepository
 import com.domu.repository.UserRepository
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 import java.util.UUID
@@ -86,6 +87,7 @@ class FamilyService(
         return family.toResponse()
     }
 
+    @Transactional(readOnly = true)
     fun getMembers(familyId: Long, userId: Long): List<MemberResponse> {
         familyAuthService.requireMember(familyId, userId)
         return familyMemberRepository.findByFamily_Id(familyId).map { member ->

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew test --tests \"com.domu.unit.*\" --info)",
+      "Bash(./gradlew test --tests \"com.domu.unit.*\")",
+      "Bash(./gradlew test --tests \"com.domu.slice.*\")"
+    ]
+  }
+}
