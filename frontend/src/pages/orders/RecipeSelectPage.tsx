@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Search, ChefHat, Check } from 'lucide-react'
 import { getRecipes } from '@/api/recipe'
 import { createOrder } from '@/api/order'

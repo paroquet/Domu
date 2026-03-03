@@ -8,6 +8,7 @@ data/
 backend/.gradle/
 backend/build/
 backend/out/
+backend/src/main/resources/static/
 
 # Frontend
 frontend/node_modules/

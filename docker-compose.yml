@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    image: domu:latest
+    image: ccr.ccs.tencentyun.com/o-pq/domu:latest
     ports:
       - "${PORT:-8080}:8080"
     volumes:

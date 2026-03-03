@@ -451,3 +451,13 @@ open build/reports/tests/test/index.html
 ---
 
 ## 注意事项
+
+PWA 应用清理缓存
+``` 
+  // 1. 注销 ServiceWorker                    
+  navigator.serviceWorker.ready.then(reg => reg.unregister());
+  // 2. 清理 Cache Storage（这才是真正清缓存）
+  caches.keys().then(keys => {
+    keys.forEach(key => caches.delete(key));
+  });
+```

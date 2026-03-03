@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { LogOut, User, Camera } from 'lucide-react'
+import { LogOut, User, Camera, RefreshCw } from 'lucide-react'
 import { updateMe, logout } from '@/api/auth'
 import { uploadFile } from '@/api/file'
 import { useAuthStore } from '@/stores/authStore'
@@ -33,6 +33,7 @@ export default function ProfilePage() {
 
   const [name, setName] = useState(user?.name ?? '')
   const [avatarUploading, setAvatarUploading] = useState(false)
+  const [cacheClearing, setCacheClearing] = useState(false)
 
   const updateMutation = useMutation({
     mutationFn: updateMe,
@@ -73,6 +74,27 @@ export default function ProfilePage() {
       setCurrentFamilyId(null)
       queryClient.clear()
       navigate('/login')
+    }
+  }
+
+  const handleClearCache = async () => {
+    setCacheClearing(true)
+    try {
+      // 注销 Service Worker
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations()
+        await Promise.all(registrations.map(reg => reg.unregister()))
+      }
+      // 清理 Cache Storage
+      if ('caches' in window) {
+        const keys = await caches.keys()
+        await Promise.all(keys.map(key => caches.delete(key)))
+      }
+      toast({ title: '缓存已清理，即将刷新页面' })
+      setTimeout(() => window.location.reload(), 1000)
+    } catch {
+      toast({ title: '清理缓存失败', variant: 'destructive' })
+      setCacheClearing(false)
     }
   }
 
@@ -149,6 +171,24 @@ export default function ProfilePage() {
             </p>
             <p className="text-xs text-gray-400">邮箱不可修改</p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Clear Cache */}
+      <Card>
+        <CardContent className="pt-6">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleClearCache}
+            disabled={cacheClearing}
+          >
+            <RefreshCw className={`h-4 w-4 ${cacheClearing ? 'animate-spin' : ''}`} />
+            {cacheClearing ? '清理中...' : '清理缓存'}
+          </Button>
+          <p className="text-xs text-gray-400 mt-2 text-center">
+            如遇页面显示异常，可尝试清理缓存
+          </p>
         </CardContent>
       </Card>
 
