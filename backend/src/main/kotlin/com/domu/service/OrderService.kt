@@ -13,11 +13,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 import java.time.LocalDate
 
 @Service
+@Transactional
 class OrderService(
     private val orderRepository: OrderRepository,
     private val familyRepository: FamilyRepository,
