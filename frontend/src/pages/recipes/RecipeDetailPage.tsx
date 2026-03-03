@@ -5,7 +5,10 @@ import { Edit, Trash2, Share2, ChefHat, ArrowLeft, ClipboardList, Copy, Check } 
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { getRecipe, deleteRecipe, shareRecipe } from '@/api/recipe'
+import { getCookingRecords } from '@/api/cookingRecord'
 import { useAuthStore } from '@/stores/authStore'
+import { useFamilyStore } from '@/stores/familyStore'
+import CookingRecordCard from '@/components/CookingRecordCard'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -32,6 +35,7 @@ export default function RecipeDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useAuthStore()
+  const { currentFamilyId } = useFamilyStore()
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState('')
   const [copied, setCopied] = useState(false)
@@ -40,6 +44,12 @@ export default function RecipeDetailPage() {
     queryKey: ['recipe', id],
     queryFn: () => getRecipe(Number(id)),
     enabled: !!id,
+  })
+
+  const { data: cookingRecords = [] } = useQuery({
+    queryKey: ['cooking-records', currentFamilyId, id],
+    queryFn: () => getCookingRecords(currentFamilyId!, Number(id)),
+    enabled: !!currentFamilyId && !!id,
   })
 
   const deleteMutation = useMutation({
@@ -232,14 +242,42 @@ export default function RecipeDetailPage() {
         </div>
       )}
 
-      {/* Action: add cooking record */}
-      <div className="pt-2">
+      {/* Cooking Records Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">
+            做菜记录 {cookingRecords.length > 0 && `(${cookingRecords.length})`}
+          </h2>
+          {cookingRecords.length > 5 && (
+            <Link
+              to={`/cooking-records?recipeId=${recipe.id}`}
+              className="text-sm text-blue-600 hover:text-blue-700"
+            >
+              查看全部
+            </Link>
+          )}
+        </div>
+
+        {/* Add cooking record button */}
         <Button asChild className="w-full" variant="outline">
           <Link to={`/cooking-records/new?recipeId=${recipe.id}&recipeTitle=${encodeURIComponent(recipe.title)}`}>
             <ClipboardList className="h-4 w-4" />
             记录做菜
           </Link>
         </Button>
+
+        {/* Cooking records list */}
+        {cookingRecords.length > 0 ? (
+          <div className="space-y-3">
+            {cookingRecords.slice(0, 5).map((record) => (
+              <CookingRecordCard key={record.id} record={record} hideRecipeTitle />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-400 text-sm">
+            还没有做菜记录，快来记录第一次吧
+          </div>
+        )}
       </div>
 
       {/* Tags */}

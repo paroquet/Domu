@@ -21,7 +21,7 @@ export async function getRecipe(id: number): Promise<Recipe> {
 }
 
 export async function getSharedRecipe(token: string): Promise<Recipe> {
-  const res = await client.get<Recipe>(`/recipes/share/${token}`)
+  const res = await client.get<Recipe>(`/recipes/shared/${token}`)
   return res.data
 }
 

@@ -12,6 +12,7 @@ import CookingRecordListPage from '@/pages/cooking-records/CookingRecordListPage
 import CookingRecordFormPage from '@/pages/cooking-records/CookingRecordFormPage'
 import FamilyPage from '@/pages/family/FamilyPage'
 import OrderPage from '@/pages/orders/OrderPage'
+import RecipeSelectPage from '@/pages/orders/RecipeSelectPage'
 import ProfilePage from '@/pages/profile/ProfilePage'
 
 export default function App() {
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/cooking-records/new" element={<CookingRecordFormPage />} />
             <Route path="/family" element={<FamilyPage />} />
             <Route path="/orders" element={<OrderPage />} />
+            <Route path="/orders/select" element={<RecipeSelectPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

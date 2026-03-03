@@ -12,10 +12,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 
 @Service
+@Transactional
 class CookingRecordService(
     private val cookingRecordRepository: CookingRecordRepository,
     private val recipeRepository: RecipeRepository,

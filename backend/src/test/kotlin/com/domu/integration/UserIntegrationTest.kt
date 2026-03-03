@@ -197,4 +197,66 @@ class UserIntegrationTest {
         assertThat(body["name"].asText()).isEqualTo("更新后的名字")
         assertThat(body["avatarPath"].asText()).isEqualTo("/new-avatar.png")
     }
+
+    // ---------- 边界条件测试 ----------
+
+    @Test
+    fun `更新用户信息 - 支持特殊字符用户名`() {
+        val cookie = registerAndGetCookie("special_chars@test.com", "原名")
+
+        val response = put(
+            "/api/v1/users/me",
+            """{"name":"李明 (管理员)"}""",
+            cookie
+        )
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        val body = objectMapper.readTree(response.body)
+        assertThat(body["name"].asText()).isEqualTo("李明 (管理员)")
+    }
+
+    @Test
+    fun `更新用户信息 - 支持 emoji 用户名`() {
+        val cookie = registerAndGetCookie("emoji_name@test.com", "原名")
+
+        val response = put(
+            "/api/v1/users/me",
+            """{"name":"小明 🎉"}""",
+            cookie
+        )
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        val body = objectMapper.readTree(response.body)
+        assertThat(body["name"].asText()).isEqualTo("小明 🎉")
+    }
+
+    @Test
+    fun `更新用户信息 - 幂等性（相同名字多次更新）`() {
+        val cookie = registerAndGetCookie("idempotent@test.com", "固定名字")
+
+        // 多次更新相同名字
+        put("/api/v1/users/me", """{"name":"固定名字"}""", cookie)
+        put("/api/v1/users/me", """{"name":"固定名字"}""", cookie)
+        val response = put("/api/v1/users/me", """{"name":"固定名字"}""", cookie)
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        val body = objectMapper.readTree(response.body)
+        assertThat(body["name"].asText()).isEqualTo("固定名字")
+    }
+
+    @Test
+    fun `更新用户信息 - 清空头像后保持为空`() {
+        val cookie = registerAndGetCookie("clear_avatar@test.com", "测试用户")
+
+        // 设置头像
+        put("/api/v1/users/me", """{"name":"测试用户","avatarPath":"/avatar.png"}""", cookie)
+
+        // 仅更新名字（不传 avatarPath），头像应保持
+        val response = put("/api/v1/users/me", """{"name":"新名字"}""", cookie)
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        val body = objectMapper.readTree(response.body)
+        assertThat(body["name"].asText()).isEqualTo("新名字")
+        assertThat(body["avatarPath"].asText()).isEqualTo("/avatar.png")
+    }
 }

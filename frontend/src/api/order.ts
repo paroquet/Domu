@@ -3,7 +3,7 @@ import type { Order, ShoppingItem } from '@/types'
 
 interface OrderFormData {
   familyId: number
-  orderedForId: number
+  orderedForId?: number
   recipeId: number
   plannedDate: string
 }

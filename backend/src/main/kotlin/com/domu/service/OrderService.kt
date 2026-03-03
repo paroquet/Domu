@@ -44,7 +44,8 @@ class OrderService(
         val orderedBy = userRepository.findById(userId).orElseThrow {
             ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
         }
-        val orderedFor = userRepository.findById(request.orderedForId).orElseThrow {
+        val orderedForId = request.orderedForId ?: userId
+        val orderedFor = userRepository.findById(orderedForId).orElseThrow {
             ResponseStatusException(HttpStatus.NOT_FOUND, "Ordered for user not found")
         }
         val recipe = recipeRepository.findById(request.recipeId).orElseThrow {

@@ -1,24 +1,22 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
-import { Plus, ShoppingCart, Check, X, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react'
-import { getOrders, createOrder, updateOrderStatus, deleteOrder, getShoppingPlan } from '@/api/order'
-import { getRecipes } from '@/api/recipe'
-import { getFamilyMembers } from '@/api/family'
+import { Plus, ShoppingCart, Check, X, ShoppingBag, ChevronLeft, ChevronRight, CalendarIcon } from 'lucide-react'
+import { getOrders, updateOrderStatus, deleteOrder, getShoppingPlan } from '@/api/order'
 import { useFamilyStore } from '@/stores/familyStore'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
@@ -47,10 +45,7 @@ export default function OrderPage() {
   const queryClient = useQueryClient()
 
   const [selectedDate, setSelectedDate] = useState(new Date())
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [shoppingDialogOpen, setShoppingDialogOpen] = useState(false)
-  const [newOrderRecipeId, setNewOrderRecipeId] = useState('')
-  const [newOrderForId, setNewOrderForId] = useState('')
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd')
 
@@ -60,34 +55,10 @@ export default function OrderPage() {
     enabled: !!currentFamilyId,
   })
 
-  const { data: recipes = [] } = useQuery({
-    queryKey: ['recipes', currentFamilyId],
-    queryFn: () => getRecipes(currentFamilyId!),
-    enabled: !!currentFamilyId,
-  })
-
-  const { data: members = [] } = useQuery({
-    queryKey: ['family-members', currentFamilyId],
-    queryFn: () => getFamilyMembers(currentFamilyId!),
-    enabled: !!currentFamilyId,
-  })
-
   const { data: shoppingPlan = [], refetch: refetchShopping } = useQuery({
     queryKey: ['shopping-plan', currentFamilyId, dateStr],
     queryFn: () => getShoppingPlan(currentFamilyId!, dateStr),
     enabled: false,
-  })
-
-  const createMutation = useMutation({
-    mutationFn: createOrder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders', currentFamilyId, dateStr] })
-      setCreateDialogOpen(false)
-      setNewOrderRecipeId('')
-      setNewOrderForId('')
-      toast({ title: '点菜成功' })
-    },
-    onError: () => toast({ title: '操作失败', variant: 'destructive' }),
   })
 
   const updateStatusMutation = useMutation({
@@ -108,19 +79,6 @@ export default function OrderPage() {
     onError: () => toast({ title: '操作失败', variant: 'destructive' }),
   })
 
-  const handleCreateOrder = () => {
-    if (!newOrderRecipeId || !newOrderForId || !currentFamilyId) {
-      toast({ title: '请选择菜谱和用餐人', variant: 'destructive' })
-      return
-    }
-    createMutation.mutate({
-      familyId: currentFamilyId,
-      recipeId: Number(newOrderRecipeId),
-      orderedForId: Number(newOrderForId),
-      plannedDate: dateStr,
-    })
-  }
-
   const handleViewShopping = async () => {
     await refetchShopping()
     setShoppingDialogOpen(true)
@@ -140,23 +98,25 @@ export default function OrderPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">点菜</h1>
-        <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4" />
-          点菜
+        <Button size="sm" asChild>
+          <Link to={`/orders/select?date=${dateStr}`}>
+            <Plus className="h-4 w-4" />
+            点菜
+          </Link>
         </Button>
       </div>
 
       {/* Date picker */}
-      <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg p-2">
+      <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1">
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-12 w-10 shrink-0 rounded-lg"
           onClick={() => setSelectedDate((d) => addDays(d, -1))}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-5 w-5" />
         </Button>
-        <div className="flex-1 text-center">
+        <div className="flex-1 text-center py-1">
           <div className="font-semibold text-gray-900">
             {format(selectedDate, 'MM月dd日', { locale: zhCN })}
           </div>
@@ -167,19 +127,28 @@ export default function OrderPage() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-12 w-10 shrink-0 rounded-lg"
           onClick={() => setSelectedDate((d) => addDays(d, 1))}
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-5 w-5" />
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setSelectedDate(new Date())}
-          className="text-xs"
-        >
-          今天
-        </Button>
+        <div className="w-px h-8 bg-gray-200 mx-1" />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-12 w-10 shrink-0 rounded-lg">
+              <CalendarIcon className="h-5 w-5" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && setSelectedDate(date)}
+              locale={zhCN}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Shopping plan button */}
@@ -201,8 +170,8 @@ export default function OrderPage() {
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <ShoppingCart className="h-12 w-12 text-gray-300 mb-3" />
           <p className="text-gray-500">今天还没有点菜</p>
-          <Button className="mt-4" size="sm" onClick={() => setCreateDialogOpen(true)}>
-            立即点菜
+          <Button className="mt-4" size="sm" asChild>
+            <Link to={`/orders/select?date=${dateStr}`}>立即点菜</Link>
           </Button>
         </div>
       ) : (
@@ -217,9 +186,7 @@ export default function OrderPage() {
                       {getStatusBadge(order.status)}
                     </div>
                     <div className="text-sm text-gray-500 mt-1">
-                      <span>{order.orderedByName} 为 </span>
-                      <span className="font-medium text-gray-700">{order.orderedForName}</span>
-                      <span> 点的</span>
+                      {order.orderedByName} 点的
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
@@ -268,57 +235,6 @@ export default function OrderPage() {
           ))}
         </div>
       )}
-
-      {/* Create order dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>点菜</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label>选择菜谱</Label>
-              <Select value={newOrderRecipeId} onValueChange={setNewOrderRecipeId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择菜谱" />
-                </SelectTrigger>
-                <SelectContent>
-                  {recipes.map((r) => (
-                    <SelectItem key={r.id} value={String(r.id)}>
-                      {r.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>点给谁吃</Label>
-              <Select value={newOrderForId} onValueChange={setNewOrderForId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择家庭成员" />
-                </SelectTrigger>
-                <SelectContent>
-                  {members.map((m) => (
-                    <SelectItem key={m.userId} value={String(m.userId)}>
-                      {m.name}
-                      {m.userId === user?.id ? '（我）' : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="text-sm text-gray-500">
-              用餐日期：{format(selectedDate, 'yyyy年MM月dd日', { locale: zhCN })}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>取消</Button>
-            <Button onClick={handleCreateOrder} disabled={createMutation.isPending}>
-              {createMutation.isPending ? '提交中...' : '确认点菜'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Shopping plan dialog */}
       <Dialog open={shoppingDialogOpen} onOpenChange={setShoppingDialogOpen}>

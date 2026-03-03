@@ -22,7 +22,7 @@ export async function joinFamily(inviteCode: string): Promise<Family> {
 }
 
 export async function regenerateInviteCode(familyId: number): Promise<{ inviteCode: string }> {
-  const res = await client.post<{ inviteCode: string }>(`/families/${familyId}/invite-code/regenerate`)
+  const res = await client.post<{ inviteCode: string }>(`/families/${familyId}/invite-code`)
   return res.data
 }
 

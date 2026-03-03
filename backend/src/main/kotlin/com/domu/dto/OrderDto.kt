@@ -2,7 +2,7 @@ package com.domu.dto
 
 data class CreateOrderRequest(
     val familyId: Long,
-    val orderedForId: Long,
+    val orderedForId: Long? = null,
     val recipeId: Long,
     val plannedDate: String
 )

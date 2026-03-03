@@ -16,11 +16,11 @@ export async function logout(): Promise<void> {
 }
 
 export async function getMe(): Promise<User> {
-  const res = await client.get<User>('/auth/me')
+  const res = await client.get<User>('/users/me')
   return res.data
 }
 
 export async function updateMe(data: { name: string; avatarPath?: string }): Promise<User> {
-  const res = await client.put<User>('/auth/me', data)
+  const res = await client.put<User>('/users/me', data)
   return res.data
 }
