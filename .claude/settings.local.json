@@ -6,7 +6,8 @@
       "Bash(./gradlew test --tests \"com.domu.slice.*\")",
       "Bash(./gradlew test:*)",
       "Bash(grep:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

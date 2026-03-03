@@ -1,7 +1,9 @@
 spring:
   datasource:
-    url: jdbc:sqlite:${DATA_DIR:./data}/domu.db
+    url: jdbc:sqlite:${DATA_DIR:./data}/domu.db?busy_timeout=30000&journal_mode=WAL
     driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1
   jpa:
     database-platform: org.hibernate.community.dialect.SQLiteDialect
     hibernate:

@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:sqlite:/app/data/domu.db
+    url: jdbc:sqlite:/app/data/domu.db?busy_timeout=30000&journal_mode=WAL
   jpa:
     show-sql: false
 
