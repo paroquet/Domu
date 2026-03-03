@@ -296,4 +296,16 @@ DELETE /api/v1/orders/{id}                          # 取消
 GET    /api/v1/orders/shopping-plan?date=YYYY-MM-DD # 聚合买菜清单
 ```
 
+## 开发规范
+
+### 时间字段管理
+
+| 原则 | 说明 |
+|------|------|
+| 服务端生成 | 所有时间戳由服务端 `Instant.now()` 生成，前端不传递时间参数 |
+| 存储格式 | SQLite TEXT 字段，ISO-8601 格式（如 `2026-03-03T12:34:56.789Z`）|
+| 类型转换 | `InstantConverter` 自动转换 `Instant` ↔ ISO-8601 字符串 |
+
+---
+
 ## 注意事项
