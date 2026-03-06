@@ -120,8 +120,24 @@ class FamilyService(
         familyMemberRepository.delete(member)
     }
 
-    private fun generateInviteCode(): String =
-        UUID.randomUUID().toString().replace("-", "").substring(0, 8).uppercase()
+    private fun generateInviteCode(): String {
+        val maxRetries = 10
+        var attempt = 0
+
+        while (attempt < maxRetries) {
+            val code = UUID.randomUUID().toString().replace("-", "").substring(0, 8).uppercase()
+
+            // 检查邀请码是否已存在
+            if (familyRepository.findByInviteCode(code) == null) {
+                return code
+            }
+
+            attempt++
+        }
+
+        // 如果重试后仍然重复，抛出异常
+        throw IllegalStateException("Unable to generate unique invite code after $maxRetries attempts")
+    }
 
     private fun Family.toResponse() = FamilyResponse(
         id = id,

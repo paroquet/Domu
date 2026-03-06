@@ -1,6 +1,7 @@
 package com.domu.controller
 
 import com.domu.dto.*
+import com.domu.service.FamilyAuthService
 import com.domu.service.FamilyService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -9,7 +10,10 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/families")
-class FamilyController(private val familyService: FamilyService) {
+class FamilyController(
+    private val familyService: FamilyService,
+    private val familyAuthService: FamilyAuthService
+) {
 
     @PostMapping
     fun createFamily(@RequestBody request: CreateFamilyRequest): ResponseEntity<FamilyResponse> {
@@ -20,6 +24,7 @@ class FamilyController(private val familyService: FamilyService) {
     @GetMapping("/{id}")
     fun getFamily(@PathVariable id: Long): ResponseEntity<FamilyResponse> {
         val userId = getCurrentUserId()
+        familyAuthService.requireMember(id, userId)
         val family = familyService.getById(id)
         return ResponseEntity.ok(
             FamilyResponse(

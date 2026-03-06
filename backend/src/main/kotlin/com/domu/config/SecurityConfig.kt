@@ -3,6 +3,7 @@ package com.domu.config
 import com.domu.security.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
@@ -13,7 +14,9 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
@@ -28,6 +31,13 @@ class SecurityConfig(
         http
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .exceptionHandling { exception ->
+                exception
+                    // 未认证（401）
+                    .authenticationEntryPoint(authenticationEntryPoint())
+                    // 权限不足（403）
+                    .accessDeniedHandler(accessDeniedHandler())
+            }
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(
@@ -63,4 +73,18 @@ class SecurityConfig(
     @Bean
     fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager =
         config.authenticationManager
+
+    @Bean
+    fun authenticationEntryPoint(): AuthenticationEntryPoint {
+        return AuthenticationEntryPoint { request, response, authException ->
+            response.sendError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized: Authentication required")
+        }
+    }
+
+    @Bean
+    fun accessDeniedHandler(): AccessDeniedHandler {
+        return AccessDeniedHandler { request, response, accessDeniedException ->
+            response.sendError(HttpStatus.FORBIDDEN.value(), "Forbidden: Insufficient privileges")
+        }
+    }
 }
