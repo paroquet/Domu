@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:sqlite::memory:
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+app:
+  jwt:
+    secret: test-secret-key-that-is-at-least-32-chars-long
+    access-expiration: 86400000
+    refresh-expiration: 604800000
+  upload:
+    dir: /tmp/domu-test-uploads
+  base-url: http://localhost:8080

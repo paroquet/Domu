@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:./data/domu.db?busy_timeout=30000&journal_mode=WAL
+  jpa:
+    show-sql: true
+
+app:
+  upload:
+    dir: ./data/uploads
+  base-url: http://localhost:8080
