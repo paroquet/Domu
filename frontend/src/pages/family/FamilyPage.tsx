@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Users, Copy, Check, RefreshCw, Crown, UserMinus, Shield } from 'lucide-react'
+import { Users, Copy, Check, RefreshCw, Crown, UserMinus, Shield, ChevronsUpDown } from 'lucide-react'
 import {
   createFamily,
   getFamily,
@@ -30,11 +30,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from '@/components/ui/use-toast'
+import { cn } from '@/lib/utils'
 
 export default function FamilyPage() {
-  const { currentFamilyId, setCurrentFamilyId } = useFamilyStore()
+  const { currentFamilyId, families, setCurrentFamilyId } = useFamilyStore()
   const { user } = useAuthStore()
   const queryClient = useQueryClient()
 
@@ -115,6 +122,17 @@ export default function FamilyPage() {
       setTimeout(() => setCopiedCode(false), 2000)
     } catch {
       toast({ title: '复制失败', variant: 'destructive' })
+    }
+  }
+
+  const handleFamilySwitch = (familyId: number) => {
+    if (familyId !== currentFamilyId) {
+      setCurrentFamilyId(familyId)
+      queryClient.invalidateQueries({ queryKey: ['family'] })
+      queryClient.invalidateQueries({ queryKey: ['family-members'] })
+      queryClient.invalidateQueries({ queryKey: ['recipes'] })
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['cooking-records'] })
     }
   }
 
@@ -207,10 +225,33 @@ export default function FamilyPage() {
       {/* Family info */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Users className="h-4 w-4 text-blue-600" />
-            {family?.name}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4 text-blue-600" />
+              {family?.name}
+            </CardTitle>
+            {families.length > 1 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1">
+                    切换家庭
+                    <ChevronsUpDown className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {families.map((f) => (
+                    <DropdownMenuItem
+                      key={f.id}
+                      onClick={() => handleFamilySwitch(f.id)}
+                      className={cn(f.id === currentFamilyId && 'bg-blue-50 text-blue-600')}
+                    >
+                      {f.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
           <CardDescription>{members.length} 位成员</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

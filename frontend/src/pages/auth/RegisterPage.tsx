@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ChefHat } from 'lucide-react'
 import { register } from '@/api/auth'
 import { useAuthStore } from '@/stores/authStore'
+import { useFamilyStore } from '@/stores/familyStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,6 +16,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { setUser } = useAuthStore()
+  const { initializeFamily } = useFamilyStore()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,6 +30,7 @@ export default function RegisterPage() {
     try {
       const user = await register({ email, password, name })
       setUser(user)
+      initializeFamily(user.families)
       navigate('/')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '注册失败，该邮箱可能已被注册'

@@ -1,10 +1,12 @@
 package com.domu.controller
 
 import com.domu.config.JwtProperties
+import com.domu.dto.FamilySummaryResponse
 import com.domu.dto.LoginRequest
 import com.domu.dto.RegisterRequest
 import com.domu.dto.TokenResponse
 import com.domu.dto.UserResponse
+import com.domu.repository.FamilyMemberRepository
 import com.domu.security.JwtTokenProvider
 import com.domu.service.AuthService
 import jakarta.servlet.http.HttpServletRequest
@@ -24,7 +26,8 @@ import org.springframework.http.HttpStatus
 class AuthController(
     private val authService: AuthService,
     private val jwtTokenProvider: JwtTokenProvider,
-    private val jwtProperties: JwtProperties
+    private val jwtProperties: JwtProperties,
+    private val familyMemberRepository: FamilyMemberRepository
 ) {
 
     @PostMapping("/register")
@@ -39,7 +42,16 @@ class AuthController(
         val isSecure = httpRequest.isSecure
         response.addHeader(HttpHeaders.SET_COOKIE, createCookie("access_token", accessToken, jwtProperties.accessExpiration / 1000, isSecure).toString())
         response.addHeader(HttpHeaders.SET_COOKIE, createCookie("refresh_token", refreshToken, jwtProperties.refreshExpiration / 1000, isSecure).toString())
-        return ResponseEntity.status(HttpStatus.CREATED).body(userResponse)
+        val families = getFamiliesForUser(userResponse.id)
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+            UserResponse(
+                id = userResponse.id,
+                email = userResponse.email,
+                name = userResponse.name,
+                avatarPath = userResponse.avatarPath,
+                families = families
+            )
+        )
     }
 
     @PostMapping("/login")
@@ -54,13 +66,16 @@ class AuthController(
         val isSecure = httpRequest.isSecure
         response.addHeader(HttpHeaders.SET_COOKIE, createCookie("access_token", accessToken, jwtProperties.accessExpiration / 1000, isSecure).toString())
         response.addHeader(HttpHeaders.SET_COOKIE, createCookie("refresh_token", refreshToken, jwtProperties.refreshExpiration / 1000, isSecure).toString())
-        val userResponse = UserResponse(
-            id = user.id,
-            email = user.email,
-            name = user.name,
-            avatarPath = user.avatarPath
+        val families = getFamiliesForUser(user.id)
+        return ResponseEntity.ok(
+            UserResponse(
+                id = user.id,
+                email = user.email,
+                name = user.name,
+                avatarPath = user.avatarPath,
+                families = families
+            )
         )
-        return ResponseEntity.ok(userResponse)
     }
 
     @PostMapping("/logout")
@@ -104,4 +119,14 @@ class AuthController(
             .maxAge(maxAge)
             .sameSite("Lax")
             .build()
+
+    private fun getFamiliesForUser(userId: Long): List<FamilySummaryResponse> {
+        val familyMembers = familyMemberRepository.findByUser_IdWithFamily(userId)
+        return familyMembers.map { member ->
+            FamilySummaryResponse(
+                id = member.family.id,
+                name = member.family.name
+            )
+        }
+    }
 }

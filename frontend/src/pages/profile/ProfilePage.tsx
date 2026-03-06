@@ -27,7 +27,7 @@ import { toast } from '@/components/ui/use-toast'
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore()
-  const { setCurrentFamilyId } = useFamilyStore()
+  const { setCurrentFamilyId, setFamilies } = useFamilyStore()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -72,6 +72,7 @@ export default function ProfilePage() {
     } finally {
       setUser(null)
       setCurrentFamilyId(null)
+      setFamilies([])
       queryClient.clear()
       navigate('/login')
     }

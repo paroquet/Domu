@@ -1,8 +1,14 @@
+export interface FamilySummary {
+  id: number
+  name: string
+}
+
 export interface User {
   id: number
   email: string
   name: string
   avatarPath?: string
+  families: FamilySummary[]
 }
 
 export interface Family {
