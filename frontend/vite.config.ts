@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Domu 家庭餐饮',
-        short_name: 'Domu',
+        name: '家肴',
+        short_name: '家肴',
         description: '家庭餐饮管理应用',
         theme_color: '#ffffff',
         background_color: '#ffffff',

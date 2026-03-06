@@ -11,7 +11,10 @@ FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/gradle:8.13-jdk21 AS bac
 WORKDIR /app
 COPY backend/ ./
 COPY --from=frontend /app/frontend/dist/ src/main/resources/static/
-RUN gradle bootJar --no-daemon -x test
+# 使用 BuildKit 缓存挂载 Gradle 依赖
+RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
+    --mount=type=cache,target=/home/gradle/.gradle/wrapper \
+    gradle bootJar --no-daemon -x test
 
 # Stage 3: Runtime image
 FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/eclipse-temurin:21-jre-alpine

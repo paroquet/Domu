@@ -30,6 +30,14 @@ noArg {
 }
 
 repositories {
+    // 阿里云 Maven 镜像（国内加速）
+    maven {
+        url = uri("https://maven.aliyun.com/repository/public")
+    }
+    // 腾讯云 Maven 镜像
+    maven {
+        url = uri("https://mirrors.cloud.tencent.com/nexus/repository/maven-public/")
+    }
     mavenCentral()
 }
 
