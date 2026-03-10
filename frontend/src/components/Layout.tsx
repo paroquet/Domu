@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { BookOpen, ClipboardList, ShoppingCart, Users, User, LogOut, ChefHat } from 'lucide-react'
+import { BookOpen, ClipboardList, ShoppingCart, Users, User, LogOut } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useFamilyStore } from '@/stores/familyStore'
 import { logout } from '@/api/auth'
@@ -54,8 +54,8 @@ export default function Layout() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ChefHat className="h-6 w-6 text-blue-600" />
-            <span className="font-bold text-lg text-gray-900">Domu</span>
+            <img src="/favicon.png" alt="家肴" className="h-6 w-6" />
+            <span className="font-bold text-lg text-gray-900">家肴</span>
             {family && (
               <span className="text-sm text-gray-500 hidden sm:block">· {family.name}</span>
             )}
