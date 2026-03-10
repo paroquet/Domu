@@ -5,6 +5,5 @@ spring:
     show-sql: true
 
 app:
-  upload:
-    dir: ./data/uploads
+  upload-dir: ./data/uploads
   base-url: http://localhost:8080

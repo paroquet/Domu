@@ -20,8 +20,7 @@ app:
     secret: ${JWT_SECRET:change-this-secret-in-production-must-be-at-least-32-chars}
     access-expiration: 86400000
     refresh-expiration: 604800000
-  upload:
-    dir: ${DATA_DIR:./data}/uploads
+  upload-dir: ${DATA_DIR:./data/uploads}
   base-url: ${BASE_URL:http://localhost:8080}
 
 server:
