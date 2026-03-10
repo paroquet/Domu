@@ -4,9 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Edit, Trash2, Share2, ChefHat, ArrowLeft, ClipboardList, Copy, Check } from 'lucide-react'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
-import Lightbox from 'yet-another-react-lightbox'
-import Zoom from 'yet-another-react-lightbox/plugins/zoom'
-import 'yet-another-react-lightbox/styles.css'
+import ImageLightbox from '@/components/ImageLightbox'
 import { getRecipe, deleteRecipe, shareRecipe } from '@/api/recipe'
 import { getCookingRecords } from '@/api/cookingRecord'
 import { useFamilyStore } from '@/stores/familyStore'
@@ -70,7 +68,7 @@ export default function RecipeDetailPage() {
   const shareMutation = useMutation({
     mutationFn: () => shareRecipe(Number(id)),
     onSuccess: (data) => {
-      setShareUrl(data.shareUrl || `${window.location.origin}/share/${data.shareToken}`)
+      setShareUrl(`${window.location.origin}/share/${data.shareToken}`)
       setShareDialogOpen(true)
     },
     onError: () => {
@@ -310,13 +308,11 @@ export default function RecipeDetailPage() {
       )}
 
       {/* Lightbox */}
-      <Lightbox
+      <ImageLightbox
         open={lightboxOpen}
         close={() => setLightboxOpen(false)}
         index={lightboxIndex}
         slides={slides}
-        plugins={[Zoom]}
-        carousel={{ finite: slides.length <= 1 }}
       />
 
       {/* Share dialog */}

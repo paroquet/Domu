@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ChefHat, ExternalLink } from 'lucide-react'
-import Lightbox from 'yet-another-react-lightbox'
-import Zoom from 'yet-another-react-lightbox/plugins/zoom'
-import 'yet-another-react-lightbox/styles.css'
+import ImageLightbox from '@/components/ImageLightbox'
 import { getSharedRecipe } from '@/api/recipe'
 import { Button } from '@/components/ui/button'
 
@@ -33,7 +31,7 @@ export default function SharePage() {
         <ChefHat className="h-16 w-16 text-gray-300 mb-4" />
         <h1 className="text-xl font-semibold text-gray-700 mb-2">菜谱不存在或链接已失效</h1>
         <Button asChild className="mt-4">
-          <Link to="/">前往 Domu</Link>
+          <Link to="/">前往家肴</Link>
         </Button>
       </div>
     )
@@ -64,13 +62,13 @@ export default function SharePage() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ChefHat className="h-6 w-6 text-blue-600" />
-            <span className="font-bold text-lg text-gray-900">Domu 家庭餐饮</span>
+            <img src="/favicon.png" alt="家肴" className="h-6 w-6" />
+            <span className="font-bold text-lg text-gray-900">家肴</span>
           </div>
           <Button asChild size="sm">
             <Link to="/login">
               <ExternalLink className="h-4 w-4" />
-              登录 Domu
+              登录家肴
             </Link>
           </Button>
         </div>
@@ -157,19 +155,17 @@ export default function SharePage() {
         )}
 
         {/* Lightbox */}
-        <Lightbox
+        <ImageLightbox
           open={lightboxOpen}
           close={() => setLightboxOpen(false)}
           index={lightboxIndex}
           slides={slides}
-          plugins={[Zoom]}
-          carousel={{ finite: slides.length <= 1 }}
         />
 
         {/* CTA */}
         <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 text-center space-y-3">
           <ChefHat className="h-10 w-10 text-blue-400 mx-auto" />
-          <h3 className="font-semibold text-gray-900">在 Domu 中管理你的家庭餐饮</h3>
+          <h3 className="font-semibold text-gray-900">在家肴中管理你的家庭餐饮</h3>
           <p className="text-sm text-gray-500">记录菜谱、做菜记录、家庭点菜，一个 app 搞定</p>
           <Button asChild>
             <Link to="/register">免费注册</Link>
