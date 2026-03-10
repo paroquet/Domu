@@ -4,6 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Edit, Trash2, Share2, ChefHat, ArrowLeft, ClipboardList, Copy, Check } from 'lucide-react'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
+import Lightbox from 'yet-another-react-lightbox'
+import Zoom from 'yet-another-react-lightbox/plugins/zoom'
+import 'yet-another-react-lightbox/styles.css'
 import { getRecipe, deleteRecipe, shareRecipe } from '@/api/recipe'
 import { getCookingRecords } from '@/api/cookingRecord'
 import { useFamilyStore } from '@/stores/familyStore'
@@ -37,6 +40,8 @@ export default function RecipeDetailPage() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState('')
   const [copied, setCopied] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
   const { data: recipe, isLoading } = useQuery({
     queryKey: ['recipe', id],
@@ -104,6 +109,25 @@ export default function RecipeDetailPage() {
     )
   }
 
+  const slides = [
+    ...(recipe.coverImagePath ? [{ src: recipe.coverImagePath }] : []),
+    ...recipe.steps.filter(s => s.imagePath).map(s => ({ src: s.imagePath! })),
+  ]
+
+  const coverSlideIndex = recipe.coverImagePath ? 0 : -1
+  const stepSlideIndex = (stepOrder: number) => {
+    const hasCover = recipe.coverImagePath ? 1 : 0
+    const stepsWithImg = recipe.steps.filter(s => s.imagePath)
+    const idx = stepsWithImg.findIndex(s => s.order === stepOrder)
+    return idx === -1 ? -1 : hasCover + idx
+  }
+
+  const openLightbox = (index: number) => {
+    if (index < 0 || slides.length === 0) return
+    setLightboxIndex(index)
+    setLightboxOpen(true)
+  }
+
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       {/* Back button */}
@@ -118,7 +142,12 @@ export default function RecipeDetailPage() {
       {/* Cover image */}
       <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-orange-100 to-amber-50">
         {recipe.coverImagePath ? (
-          <img src={recipe.coverImagePath} alt={recipe.title} className="w-full h-full object-cover" />
+          <img
+            src={recipe.coverImagePath}
+            alt={recipe.title}
+            className="w-full h-full object-cover cursor-pointer"
+            onClick={() => openLightbox(coverSlideIndex)}
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ChefHat className="h-20 w-20 text-orange-300" />
@@ -224,7 +253,8 @@ export default function RecipeDetailPage() {
                     <img
                       src={step.imagePath}
                       alt={`步骤 ${step.order}`}
-                      className="mt-3 rounded-lg w-full max-w-sm object-cover"
+                      className="mt-3 rounded-lg w-full max-w-sm object-cover cursor-pointer"
+                      onClick={() => openLightbox(stepSlideIndex(step.order))}
                     />
                   )}
                 </div>
@@ -278,6 +308,16 @@ export default function RecipeDetailPage() {
           <Badge variant="secondary">可分享</Badge>
         </div>
       )}
+
+      {/* Lightbox */}
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        index={lightboxIndex}
+        slides={slides}
+        plugins={[Zoom]}
+        carousel={{ finite: slides.length <= 1 }}
+      />
 
       {/* Share dialog */}
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>

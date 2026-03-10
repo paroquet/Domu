@@ -1,6 +1,10 @@
+import { useState } from 'react'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { User, Clock, ChefHat } from 'lucide-react'
+import Lightbox from 'yet-another-react-lightbox'
+import Zoom from 'yet-another-react-lightbox/plugins/zoom'
+import 'yet-another-react-lightbox/styles.css'
 import { Card, CardContent } from '@/components/ui/card'
 import type { CookingRecord } from '@/types'
 
@@ -11,6 +15,10 @@ interface CookingRecordCardProps {
 }
 
 export default function CookingRecordCard({ record, hideRecipeTitle = false }: CookingRecordCardProps) {
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const slides = record.images.map(src => ({ src }))
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
@@ -19,7 +27,8 @@ export default function CookingRecordCard({ record, hideRecipeTitle = false }: C
             <img
               src={record.images[0]}
               alt={record.recipeTitle}
-              className="w-20 h-20 rounded-lg object-cover shrink-0"
+              className="w-20 h-20 rounded-lg object-cover shrink-0 cursor-pointer"
+              onClick={() => { setLightboxIndex(0); setLightboxOpen(true) }}
             />
           ) : (
             <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center shrink-0">
@@ -51,6 +60,14 @@ export default function CookingRecordCard({ record, hideRecipeTitle = false }: C
           </div>
         </div>
       </CardContent>
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        index={lightboxIndex}
+        slides={slides}
+        plugins={[Zoom]}
+        carousel={{ finite: slides.length <= 1 }}
+      />
     </Card>
   )
 }
