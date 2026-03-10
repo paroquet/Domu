@@ -34,7 +34,7 @@ class AppConfig(
     @PostConstruct
     fun logConfig() {
         log.info(">>> Active profiles  : {}", env.activeProfiles.ifEmpty { arrayOf("(default)") }.toList())
-        log.info(">>> upload.dir       : {}", appProperties.uploadDir)
+        log.info(">>> upload-dir       : {}", appProperties.uploadDir)
         log.info(">>> base-url         : {}", appProperties.baseUrl)
     }
 }
