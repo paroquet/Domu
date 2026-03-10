@@ -89,7 +89,7 @@ class RecipeService(
             recipe.shareToken = it
             recipeRepository.save(recipe)
         }
-        val shareUrl = "$baseUrl/api/v1/recipes/shared/$token"
+        val shareUrl = "$baseUrl/share/$token"
         return ShareResponse(shareToken = token, shareUrl = shareUrl)
     }
 
@@ -128,7 +128,7 @@ class RecipeService(
             authorName = author.name,
             familyId = family.id,
             shareToken = token,
-            shareUrl = token?.let { "/api/v1/recipes/shared/$it" },
+            shareUrl = token?.let { "/share/$it" },
             createdAt = createdAt.toString(),
             updatedAt = updatedAt.toString()
         )
