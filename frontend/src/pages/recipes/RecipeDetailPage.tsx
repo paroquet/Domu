@@ -204,7 +204,7 @@ export default function RecipeDetailPage() {
           <span>{format(new Date(recipe.updatedAt), 'yyyy年MM月dd日', { locale: zhCN })}</span>
         </div>
         {recipe.description && (
-          <p className="mt-3 text-gray-600 leading-relaxed">{recipe.description}</p>
+          <p className="mt-3 text-gray-600 leading-relaxed whitespace-pre-line">{recipe.description}</p>
         )}
       </div>
 

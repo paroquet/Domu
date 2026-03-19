@@ -96,7 +96,7 @@ export default function SharePage() {
           <h1 className="text-2xl font-bold text-gray-900">{recipe.title}</h1>
           <p className="text-sm text-gray-500 mt-1">由 {recipe.authorName} 分享</p>
           {recipe.description && (
-            <p className="mt-3 text-gray-600 leading-relaxed">{recipe.description}</p>
+            <p className="mt-3 text-gray-600 leading-relaxed whitespace-pre-line">{recipe.description}</p>
           )}
         </div>
 
