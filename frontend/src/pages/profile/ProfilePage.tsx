@@ -223,6 +223,11 @@ export default function ProfilePage() {
           </AlertDialog>
         </CardContent>
       </Card>
+
+      {/* Version */}
+      <p className="text-center text-xs text-gray-400 pb-4">
+        v{__APP_VERSION__}
+      </p>
     </div>
   )
 }

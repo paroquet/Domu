@@ -26,4 +26,10 @@ cd backend
 cd frontend
 npm run dev
 
+# 前端更新
+# 修改 version
+frontend/package.json
+
+# 修改 changelog
+frontend/CHANGELOG.md
 ```
