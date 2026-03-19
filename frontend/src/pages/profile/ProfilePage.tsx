@@ -92,7 +92,8 @@ export default function ProfilePage() {
         await Promise.all(keys.map(key => caches.delete(key)))
       }
       toast({ title: '缓存已清理，即将刷新页面' })
-      setTimeout(() => window.location.reload(), 1000)
+      // 跳转到根路径，避免 SPA 路由问题
+      setTimeout(() => window.location.href = '/', 1000)
     } catch {
       toast({ title: '清理缓存失败', variant: 'destructive' })
       setCacheClearing(false)
@@ -223,6 +224,11 @@ export default function ProfilePage() {
           </AlertDialog>
         </CardContent>
       </Card>
+
+      {/* Version */}
+      <p className="text-center text-xs text-gray-400 pb-4">
+        v{__APP_VERSION__}
+      </p>
     </div>
   )
 }

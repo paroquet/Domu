@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Layout from '@/components/Layout'
+import UpdatePrompt from '@/components/UpdatePrompt'
+import { useRegisterSW } from '@/hooks/useRegisterSW'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import SharePage from '@/pages/recipes/SharePage'
@@ -16,6 +18,8 @@ import RecipeSelectPage from '@/pages/orders/RecipeSelectPage'
 import ProfilePage from '@/pages/profile/ProfilePage'
 
 export default function App() {
+  useRegisterSW()
+
   return (
     <>
       <Routes>
@@ -45,6 +49,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster />
+      <UpdatePrompt />
     </>
   )
 }
