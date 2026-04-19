@@ -1,6 +1,7 @@
 set -ex
 
-sh build.sh
+sh build-front.sh
+sh build-images.sh
 
 scp .env domu:~
 scp docker-compose.yml domu:~

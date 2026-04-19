@@ -44,7 +44,7 @@ class FamilyServiceTest {
     private lateinit var familyService: FamilyService
 
     private val testUser = User(id = 1L, email = "admin@test.com", passwordHash = "h", name = "管理员")
-    private val testFamily = Family(id = 10L, name = "测试家庭", inviteCode = "ABCD1234")
+    private val testFamily = Family(id = 10L, name = "测试家庭", inviteCode = "ABCD1234", createdAt = java.time.Instant.now())
 
     // ---------- create ----------
 
@@ -53,6 +53,7 @@ class FamilyServiceTest {
         val memberSlot = slot<FamilyMember>()
 
         every { userRepository.findById(1L) } returns Optional.of(testUser)
+        every { familyRepository.findByInviteCode(any()) } returns null
         every { familyRepository.save(any()) } returns testFamily
         every { familyMemberRepository.save(capture(memberSlot)) } returns mockk()
 

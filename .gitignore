@@ -6,6 +6,7 @@ data/
 
 # Backend
 backend/.gradle/
+backend/.kotlin/
 backend/build/
 backend/out/
 backend/src/main/resources/static/

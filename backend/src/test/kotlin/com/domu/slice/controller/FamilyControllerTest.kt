@@ -99,7 +99,7 @@ class FamilyControllerTest {
     @Test
     fun `GET families id - 返回家庭信息`() {
         every { familyService.getById(10L) } returns
-            com.domu.model.Family(id = 10L, name = "测试家庭", inviteCode = "ABCD1234")
+            com.domu.model.Family(id = 10L, name = "测试家庭", inviteCode = "ABCD1234", createdAt = java.time.Instant.now())
 
         mockMvc.get("/api/v1/families/10") {
             cookie(authCookie)

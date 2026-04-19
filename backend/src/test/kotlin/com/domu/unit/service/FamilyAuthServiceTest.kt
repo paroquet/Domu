@@ -27,7 +27,7 @@ class FamilyAuthServiceTest {
     private lateinit var familyAuthService: FamilyAuthService
 
     private fun mockMember(role: String): FamilyMember {
-        val family = Family(id = 1L, name = "家庭A", inviteCode = "ABCD1234")
+        val family = Family(id = 1L, name = "家庭A", inviteCode = "ABCD1234", createdAt = java.time.Instant.now())
         val user = User(id = 10L, email = "u@test.com", passwordHash = "h", name = "用户A")
         return FamilyMember(id = FamilyMemberId(1L, 10L), family = family, user = user, role = role)
     }

@@ -43,10 +43,10 @@ class CookingRecordRepositoryTest {
             User(email = "test@test.com", passwordHash = "h", name = "测试用户")
         )
         testFamily1 = entityManager.persistAndFlush(
-            Family(name = "家庭1", inviteCode = "FAMILY01")
+            Family(name = "家庭1", inviteCode = "FAMILY01", createdAt = java.time.Instant.now())
         )
         testFamily2 = entityManager.persistAndFlush(
-            Family(name = "家庭2", inviteCode = "FAMILY02")
+            Family(name = "家庭2", inviteCode = "FAMILY02", createdAt = java.time.Instant.now())
         )
         testRecipe1 = entityManager.persistAndFlush(
             Recipe(

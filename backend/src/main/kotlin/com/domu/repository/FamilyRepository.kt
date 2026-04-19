@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface FamilyRepository : JpaRepository<Family, Long> {
     fun findByInviteCode(code: String): Family?
+    fun findByIdAndDeletedAtIsNull(id: Long): Family?
 }

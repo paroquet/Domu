@@ -96,6 +96,9 @@ class RecipeService(
     fun getByShareToken(token: String): RecipeResponse {
         val recipe = recipeRepository.findByShareToken(token)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Recipe not found")
+        if (recipe.family.deletedAt != null) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Recipe not found")
+        }
         return recipe.toResponse()
     }
 

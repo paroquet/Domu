@@ -53,7 +53,7 @@ class CookingRecordServiceTest {
     private lateinit var cookingRecordService: CookingRecordService
 
     private val testUser = User(id = 1L, email = "test@test.com", passwordHash = "h", name = "测试用户")
-    private val testFamily = Family(id = 10L, name = "测试家庭", inviteCode = "ABC12345")
+    private val testFamily = Family(id = 10L, name = "测试家庭", inviteCode = "ABC12345", createdAt = java.time.Instant.now())
     private val testRecipe = Recipe(
         id = 100L,
         title = "红烧肉",

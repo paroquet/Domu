@@ -28,7 +28,7 @@ class FamilyRepositoryTest {
     private lateinit var entityManager: TestEntityManager
 
     private fun saveFamily(name: String, inviteCode: String): Family {
-        val family = Family(name = name, inviteCode = inviteCode)
+        val family = Family(name = name, inviteCode = inviteCode, createdAt = java.time.Instant.now())
         return entityManager.persistAndFlush(family)
     }
 
@@ -86,7 +86,7 @@ class FamilyRepositoryTest {
 
     @Test
     fun `save - 成功保存家庭并生成 ID`() {
-        val family = Family(name = "新家庭", inviteCode = "NEWCODE1")
+        val family = Family(name = "新家庭", inviteCode = "NEWCODE1", createdAt = java.time.Instant.now())
 
         val saved = familyRepository.save(family)
         entityManager.flush()

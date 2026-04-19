@@ -2,6 +2,7 @@ package com.domu.service
 
 import com.domu.dto.CreateFamilyRequest
 import com.domu.dto.FamilyResponse
+import com.domu.dto.FamilySummaryResponse
 import com.domu.dto.InviteCodeResponse
 import com.domu.dto.MemberResponse
 import com.domu.model.Family
@@ -49,9 +50,8 @@ class FamilyService(
     }
 
     fun getById(id: Long): Family {
-        return familyRepository.findById(id).orElseThrow {
-            ResponseStatusException(HttpStatus.NOT_FOUND, "Family not found")
-        }
+        return familyRepository.findByIdAndDeletedAtIsNull(id)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Family not found")
     }
 
     fun regenerateInviteCode(familyId: Long, userId: Long): InviteCodeResponse {
@@ -120,6 +120,14 @@ class FamilyService(
         familyMemberRepository.delete(member)
     }
 
+    fun deleteFamily(familyId: Long, requestingUserId: Long) {
+        familyAuthService.requireAdmin(familyId, requestingUserId)
+        val family = familyRepository.findByIdAndDeletedAtIsNull(familyId)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Family not found")
+        family.deletedAt = Instant.now()
+        familyRepository.save(family)
+    }
+
     private fun generateInviteCode(): String {
         val maxRetries = 10
         var attempt = 0
@@ -137,6 +145,17 @@ class FamilyService(
 
         // 如果重试后仍然重复，抛出异常
         throw IllegalStateException("Unable to generate unique invite code after $maxRetries attempts")
+    }
+
+    @Transactional(readOnly = true)
+    fun getFamiliesForUser(userId: Long): List<FamilySummaryResponse> {
+        val members = familyMemberRepository.findByUser_IdWithFamily(userId)
+        return members.map { member ->
+            FamilySummaryResponse(
+                id = member.family.id,
+                name = member.family.name
+            )
+        }
     }
 
     private fun Family.toResponse() = FamilyResponse(
