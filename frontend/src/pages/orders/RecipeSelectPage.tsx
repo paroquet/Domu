@@ -130,8 +130,8 @@ export default function RecipeSelectPage() {
                         className="w-12 h-12 rounded-lg object-cover shrink-0"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center shrink-0">
-                        <ChefHat className="h-6 w-6 text-orange-300" />
+                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0">
+                        <ChefHat className="h-6 w-6 text-primary/60" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">

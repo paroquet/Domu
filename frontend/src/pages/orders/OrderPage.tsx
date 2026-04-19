@@ -195,7 +195,7 @@ export default function OrderPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950"
+                          className="h-8 w-8 text-[hsl(var(--success))] hover:bg-[hsl(var(--success))]/10"
                           title="标记完成"
                           onClick={() => updateStatusMutation.mutate({ id: order.id, status: 'DONE' })}
                           disabled={updateStatusMutation.isPending}

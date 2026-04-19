@@ -354,7 +354,7 @@ export default function FamilyPage() {
                 {inviteCode}
               </div>
               <Button variant="outline" size="icon" onClick={handleCopyCode}>
-                {copiedCode ? <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                {copiedCode ? <Check className="h-4 w-4 text-[hsl(var(--success))]" /> : <Copy className="h-4 w-4" />}
               </Button>
               {isAdmin && (
                 <Button

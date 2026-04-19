@@ -1,73 +1,93 @@
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    /* Light Mode - Warm & Refined */
-    --background: 210 20% 98%;
-    --foreground: 220 15% 15%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 15% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
-    --primary: 215 85% 55%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 30% 96%;
-    --secondary-foreground: 220 15% 15%;
-    --muted: 210 20% 94%;
-    --muted-foreground: 215 15% 45%;
-    --accent: 210 30% 96%;
-    --accent-foreground: 220 15% 15%;
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
-    --ring: 215 85% 55%;
-    --radius: 0.5rem;
+@theme {
+  /* Colors will be defined by CSS variables in @layer base */
+  /* We define them here to enable Tailwind utility classes */
 
-    /* Success/Warning badge colors */
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-  }
+  /* Background & Foreground */
+  --color-background: hsl(210 20% 98%);
+  --color-foreground: hsl(220 15% 15%);
 
-  .dark {
-    /* Dark Mode - Soft & Comfortable */
-    --background: 225 25% 8%;
-    --foreground: 210 20% 95%;
-    --card: 222 24% 11%;
-    --card-foreground: 210 20% 95%;
-    --popover: 222 24% 11%;
-    --popover-foreground: 210 20% 95%;
-    --primary: 217 90% 65%;
-    --primary-foreground: 222 25% 8%;
-    --secondary: 217 20% 17%;
-    --secondary-foreground: 210 20% 95%;
-    --muted: 217 18% 20%;
-    --muted-foreground: 215 15% 65%;
-    --accent: 217 20% 17%;
-    --accent-foreground: 210 20% 95%;
-    --destructive: 0 65% 55%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 217 20% 22%;
-    --input: 217 20% 22%;
-    --ring: 217 90% 65%;
+  /* Card */
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(220 15% 15%);
 
-    /* Success/Warning badge colors - dark mode */
-    --success: 142 60% 45%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 80% 50%;
-    --warning-foreground: 0 0% 100%;
-  }
+  /* Popover */
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(220 15% 15%);
+
+  /* Primary - Refined indigo blue */
+  --color-primary: hsl(225 85% 55%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  /* Secondary */
+  --color-secondary: hsl(210 20% 94%);
+  --color-secondary-foreground: hsl(220 15% 15%);
+
+  /* Muted */
+  --color-muted: hsl(210 18% 92%);
+  --color-muted-foreground: hsl(215 15% 45%);
+
+  /* Accent */
+  --color-accent: hsl(210 30% 90%);
+  --color-accent-foreground: hsl(220 15% 15%);
+
+  /* Destructive */
+  --color-destructive: hsl(0 72% 55%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+
+  /* Border & Input */
+  --color-border: hsl(210 18% 86%);
+  --color-input: hsl(210 18% 86%);
+  --color-ring: hsl(225 85% 55%);
+
+  /* Semantic Colors */
+  --color-success: hsl(152 60% 45%);
+  --color-success-foreground: hsl(0 0% 100%);
+  --color-warning: hsl(32 95% 55%);
+  --color-warning-foreground: hsl(0 0% 100%);
+  --color-info: hsl(199 85% 50%);
+  --color-info-foreground: hsl(0 0% 100%);
+
+  /* Radius */
+  --radius: 0.5rem;
+}
+
+.dark {
+  --color-background: hsl(225 20% 9%);
+  --color-foreground: hsl(210 15% 95%);
+  --color-card: hsl(222 18% 12%);
+  --color-card-foreground: hsl(210 15% 95%);
+  --color-popover: hsl(222 18% 12%);
+  --color-popover-foreground: hsl(210 15% 95%);
+  --color-primary: hsl(225 85% 62%);
+  --color-primary-foreground: hsl(222 18% 8%);
+  --color-secondary: hsl(217 18% 18%);
+  --color-secondary-foreground: hsl(210 15% 95%);
+  --color-muted: hsl(217 16% 22%);
+  --color-muted-foreground: hsl(215 12% 65%);
+  --color-accent: hsl(217 18% 18%);
+  --color-accent-foreground: hsl(210 15% 95%);
+  --color-destructive: hsl(0 65% 58%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border: hsl(217 16% 24%);
+  --color-input: hsl(217 16% 24%);
+  --color-ring: hsl(225 85% 62%);
+  --color-success: hsl(152 55% 50%);
+  --color-success-foreground: hsl(222 18% 8%);
+  --color-warning: hsl(32 90% 55%);
+  --color-warning-foreground: hsl(222 18% 8%);
+  --color-info: hsl(199 80% 55%);
+  --color-info-foreground: hsl(222 18% 8%);
 }
 
 @layer base {
   * {
-    border-color: hsl(var(--border));
+    border-color: hsl(var(--color-border));
   }
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    background-color: hsl(var(--color-background));
+    color: hsl(var(--color-foreground));
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   }
 }
