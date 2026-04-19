@@ -41,14 +41,14 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="bg-blue-600 text-white rounded-2xl p-3 mb-3">
+          <div className="bg-primary text-primary-foreground rounded-2xl p-3 mb-3">
             <ChefHat className="h-8 w-8" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Domu 家庭餐饮</h1>
-          <p className="text-gray-500 text-sm mt-1">记录家庭的每一餐美味</p>
+          <h1 className="text-2xl font-bold text-foreground">Domu 家庭餐饮</h1>
+          <p className="text-muted-foreground text-sm mt-1">记录家庭的每一餐美味</p>
         </div>
 
         <Card>
@@ -59,7 +59,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-md px-3 py-2">
+                <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-md px-3 py-2">
                   {error}
                 </div>
               )}
@@ -104,9 +104,9 @@ export default function RegisterPage() {
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? '注册中...' : '创建账号'}
               </Button>
-              <p className="text-sm text-gray-500 text-center">
+              <p className="text-sm text-muted-foreground text-center">
                 已有账号？{' '}
-                <Link to="/login" className="text-blue-600 hover:underline font-medium">
+                <Link to="/login" className="text-primary hover:underline font-medium">
                   立即登录
                 </Link>
               </p>

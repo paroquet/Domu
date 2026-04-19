@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { LogOut, User, Camera, RefreshCw } from 'lucide-react'
+import { LogOut, User, Camera, RefreshCw, Palette } from 'lucide-react'
 import { updateMe, logout } from '@/api/auth'
 import { uploadFile } from '@/api/file'
 import { useAuthStore } from '@/stores/authStore'
@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
+import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -105,7 +106,7 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-lg mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">个人信息</h1>
+      <h1 className="text-2xl font-bold text-foreground">个人信息</h1>
 
       {/* Avatar */}
       <Card>
@@ -115,9 +116,9 @@ export default function ProfilePage() {
               {user?.avatarPath && <AvatarImage src={user.avatarPath} alt={user.name} />}
               <AvatarFallback className="text-2xl">{userInitials}</AvatarFallback>
             </Avatar>
-            <label className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-1.5 cursor-pointer shadow-md hover:bg-blue-700 transition-colors">
+            <label className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-1.5 cursor-pointer shadow-md hover:bg-primary/90 transition-colors">
               {avatarUploading ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
               ) : (
                 <Camera className="h-4 w-4" />
               )}
@@ -131,8 +132,8 @@ export default function ProfilePage() {
             </label>
           </div>
           <div className="text-center">
-            <p className="font-semibold text-gray-900 text-lg">{user?.name}</p>
-            <p className="text-sm text-gray-500">{user?.email}</p>
+            <p className="font-semibold text-foreground text-lg">{user?.name}</p>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
           </div>
         </CardContent>
       </Card>
@@ -141,7 +142,7 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <User className="h-4 w-4 text-blue-600" />
+            <User className="h-4 w-4 text-primary" />
             基本信息
           </CardTitle>
         </CardHeader>
@@ -166,11 +167,11 @@ export default function ProfilePage() {
           </div>
           <Separator />
           <div className="space-y-1.5">
-            <Label className="text-gray-500">邮箱</Label>
-            <p className="text-sm text-gray-800 bg-gray-50 rounded-md px-3 py-2 border border-gray-100">
+            <Label className="text-muted-foreground">邮箱</Label>
+            <p className="text-sm text-foreground bg-muted rounded-md px-3 py-2 border border-border">
               {user?.email}
             </p>
-            <p className="text-xs text-gray-400">邮箱不可修改</p>
+            <p className="text-xs text-muted-foreground">邮箱不可修改</p>
           </div>
         </CardContent>
       </Card>
@@ -187,9 +188,22 @@ export default function ProfilePage() {
             <RefreshCw className={`h-4 w-4 ${cacheClearing ? 'animate-spin' : ''}`} />
             {cacheClearing ? '清理中...' : '清理缓存'}
           </Button>
-          <p className="text-xs text-gray-400 mt-2 text-center">
+          <p className="text-xs text-muted-foreground mt-2 text-center">
             如遇页面显示异常，可尝试清理缓存
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Theme */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Palette className="h-4 w-4 text-primary" />
+            主题设置
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ThemeSwitcher />
         </CardContent>
       </Card>
 
@@ -198,7 +212,7 @@ export default function ProfilePage() {
         <CardContent className="pt-6">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300">
+              <Button variant="outline" className="w-full text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive/50">
                 <LogOut className="h-4 w-4" />
                 退出登录
               </Button>
@@ -214,7 +228,7 @@ export default function ProfilePage() {
                 <AlertDialogCancel>取消</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleLogout}
-                  className="bg-red-500 hover:bg-red-600"
+                  className="bg-destructive hover:bg-destructive/90"
                 >
                   退出
                 </AlertDialogAction>

@@ -87,9 +87,9 @@ export default function OrderPage() {
   if (!currentFamilyId) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <ShoppingCart className="h-16 w-16 text-gray-300 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">还没有加入家庭</h2>
-        <p className="text-gray-500">请先创建或加入一个家庭</p>
+        <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-semibold text-foreground mb-2">还没有加入家庭</h2>
+        <p className="text-muted-foreground">请先创建或加入一个家庭</p>
       </div>
     )
   }
@@ -97,7 +97,7 @@ export default function OrderPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">点菜</h1>
+        <h1 className="text-2xl font-bold text-foreground">点菜</h1>
         <Button size="sm" asChild>
           <Link to={`/orders/select?date=${dateStr}`}>
             <Plus className="h-4 w-4" />
@@ -107,7 +107,7 @@ export default function OrderPage() {
       </div>
 
       {/* Date picker */}
-      <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1">
+      <div className="flex items-center bg-card border border-border rounded-xl p-1">
         <Button
           variant="ghost"
           size="icon"
@@ -117,10 +117,10 @@ export default function OrderPage() {
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1 text-center py-1">
-          <div className="font-semibold text-gray-900">
+          <div className="font-semibold text-foreground">
             {format(selectedDate, 'MM月dd日', { locale: zhCN })}
           </div>
-          <div className="text-xs text-gray-400">
+          <div className="text-xs text-muted-foreground">
             {format(selectedDate, 'EEEE', { locale: zhCN })}
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function OrderPage() {
         >
           <ChevronRight className="h-5 w-5" />
         </Button>
-        <div className="w-px h-8 bg-gray-200 mx-1" />
+        <div className="w-px h-8 bg-border mx-1" />
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="icon" className="h-12 w-10 shrink-0 rounded-lg">
@@ -163,13 +163,13 @@ export default function OrderPage() {
       {isLoading ? (
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-20 bg-gray-100 rounded-xl animate-pulse" />
+            <div key={i} className="h-20 bg-muted rounded-xl animate-pulse" />
           ))}
         </div>
       ) : orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <ShoppingCart className="h-12 w-12 text-gray-300 mb-3" />
-          <p className="text-gray-500">今天还没有点菜</p>
+          <ShoppingCart className="h-12 w-12 text-muted-foreground mb-3" />
+          <p className="text-muted-foreground">今天还没有点菜</p>
           <Button className="mt-4" size="sm" asChild>
             <Link to={`/orders/select?date=${dateStr}`}>立即点菜</Link>
           </Button>
@@ -182,10 +182,10 @@ export default function OrderPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-gray-900">{order.recipeTitle}</span>
+                      <span className="font-semibold text-foreground">{order.recipeTitle}</span>
                       {getStatusBadge(order.status)}
                     </div>
-                    <div className="text-sm text-gray-500 mt-1">
+                    <div className="text-sm text-muted-foreground mt-1">
                       {order.orderedByName} 点的
                     </div>
                   </div>
@@ -195,7 +195,7 @@ export default function OrderPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-green-600 hover:bg-green-50"
+                          className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950"
                           title="标记完成"
                           onClick={() => updateStatusMutation.mutate({ id: order.id, status: 'DONE' })}
                           disabled={updateStatusMutation.isPending}
@@ -206,7 +206,7 @@ export default function OrderPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-gray-400 hover:text-red-600"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
                             title="取消"
                             onClick={() => deleteMutation.mutate(order.id)}
                             disabled={deleteMutation.isPending}
@@ -220,7 +220,7 @@ export default function OrderPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-gray-400"
+                        className="h-8 w-8 text-muted-foreground"
                         title="撤销完成"
                         onClick={() => updateStatusMutation.mutate({ id: order.id, status: 'PENDING' })}
                         disabled={updateStatusMutation.isPending}
@@ -246,20 +246,20 @@ export default function OrderPage() {
           </DialogHeader>
           <div className="py-2">
             {shoppingPlan.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">暂无食材需要购买</p>
+              <p className="text-center text-muted-foreground py-4">暂无食材需要购买</p>
             ) : (
               <div className="space-y-1">
-                <div className="grid grid-cols-3 gap-2 text-xs font-medium text-gray-500 pb-2">
+                <div className="grid grid-cols-3 gap-2 text-xs font-medium text-muted-foreground pb-2">
                   <span>食材</span>
                   <span className="text-right">数量</span>
                   <span className="text-right">单位</span>
                 </div>
                 <Separator />
                 {shoppingPlan.map((item, i) => (
-                  <div key={i} className="grid grid-cols-3 gap-2 py-2 text-sm border-b border-gray-50 last:border-0">
-                    <span className="text-gray-800">{item.name}</span>
-                    <span className="text-right text-gray-700">{item.amount}</span>
-                    <span className="text-right text-gray-500">{item.unit}</span>
+                  <div key={i} className="grid grid-cols-3 gap-2 py-2 text-sm border-b border-border last:border-0">
+                    <span className="text-foreground">{item.name}</span>
+                    <span className="text-right text-foreground/80">{item.amount}</span>
+                    <span className="text-right text-muted-foregroundreground">{item.unit}</span>
                   </div>
                 ))}
               </div>

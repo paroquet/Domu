@@ -49,15 +49,15 @@ export default function Layout() {
     : user?.email?.slice(0, 2).toUpperCase() ?? '?'
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Top Navigation */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="bg-popover/95 backdrop-blur-sm border-b border-border sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ChefHat className="h-6 w-6 text-blue-600" />
-            <span className="font-bold text-lg text-gray-900">Domu</span>
+            <ChefHat className="h-6 w-6 text-primary" />
+            <span className="font-bold text-lg text-foreground">Domu</span>
             {family && (
-              <span className="text-sm text-gray-500 hidden sm:block">· {family.name}</span>
+              <span className="text-sm text-muted-foreground hidden sm:block">· {family.name}</span>
             )}
           </div>
 
@@ -71,8 +71,8 @@ export default function Layout() {
                   cn(
                     'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                     isActive
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   )
                 }
               >
@@ -85,7 +85,7 @@ export default function Layout() {
           {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+              <button className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                 <Avatar className="h-8 w-8">
                   {user?.avatarPath && <AvatarImage src={user.avatarPath} alt={user.name} />}
                   <AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
@@ -95,14 +95,14 @@ export default function Layout() {
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>
                 <div className="font-medium">{user?.name}</div>
-                <div className="text-xs text-gray-500 font-normal truncate">{user?.email}</div>
+                <div className="text-xs text-muted-foreground font-normal truncate">{user?.email}</div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate('/profile')}>
                 <User className="h-4 w-4" />
                 个人信息
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 focus:bg-red-50">
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive focus:bg-destructive/10">
                 <LogOut className="h-4 w-4" />
                 退出登录
               </DropdownMenuItem>
@@ -117,7 +117,7 @@ export default function Layout() {
       </main>
 
       {/* Bottom navigation (mobile) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40">
         <div className="flex">
           {navItems.map((item) => (
             <NavLink
@@ -126,7 +126,7 @@ export default function Layout() {
               className={({ isActive }) =>
                 cn(
                   'flex-1 flex flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors',
-                  isActive ? 'text-blue-600' : 'text-gray-500 hover:text-gray-900'
+                  isActive ? 'text-primary' : 'text-muted-foreground'
                 )
               }
             >

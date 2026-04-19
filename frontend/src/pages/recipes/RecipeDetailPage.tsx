@@ -88,9 +88,9 @@ export default function RecipeDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-64 bg-gray-100 rounded-xl animate-pulse" />
-        <div className="h-8 bg-gray-100 rounded animate-pulse w-1/2" />
-        <div className="h-4 bg-gray-100 rounded animate-pulse" />
+        <div className="h-64 bg-muted rounded-xl animate-pulse" />
+        <div className="h-8 bg-muted rounded animate-pulse w-1/2" />
+        <div className="h-4 bg-muted rounded animate-pulse" />
       </div>
     )
   }
@@ -98,7 +98,7 @@ export default function RecipeDetailPage() {
   if (!recipe) {
     return (
       <div className="text-center py-16">
-        <p className="text-gray-500">菜谱不存在</p>
+        <p className="text-muted-foreground">菜谱不存在</p>
         <Button asChild className="mt-4">
           <Link to="/recipes">返回菜谱列表</Link>
         </Button>
@@ -113,19 +113,19 @@ export default function RecipeDetailPage() {
       {/* Back button */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         返回
       </button>
 
       {/* Cover image */}
-      <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-orange-100 to-amber-50">
+      <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
         {recipe.coverImagePath ? (
           <img src={recipe.coverImagePath} alt={recipe.title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <ChefHat className="h-20 w-20 text-orange-300" />
+            <ChefHat className="h-20 w-20 text-primary/40" />
           </div>
         )}
       </div>
@@ -133,7 +133,7 @@ export default function RecipeDetailPage() {
       {/* Title and meta */}
       <div>
         <div className="flex items-start justify-between gap-4">
-          <h1 className="text-2xl font-bold text-gray-900">{recipe.title}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{recipe.title}</h1>
           <div className="flex items-center gap-2 shrink-0">
             <Button
               variant="outline"
@@ -153,7 +153,7 @@ export default function RecipeDetailPage() {
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </AlertDialogTrigger>
@@ -168,7 +168,7 @@ export default function RecipeDetailPage() {
                       <AlertDialogCancel>取消</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => deleteMutation.mutate()}
-                        className="bg-red-500 hover:bg-red-600"
+                        className="bg-destructive hover:bg-destructive/90"
                       >
                         删除
                       </AlertDialogAction>
@@ -179,35 +179,35 @@ export default function RecipeDetailPage() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
+        <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
           <span>作者：{recipe.authorName}</span>
           <span>·</span>
           <span>{format(new Date(recipe.updatedAt), 'yyyy年MM月dd日', { locale: zhCN })}</span>
         </div>
         {recipe.description && (
-          <p className="mt-3 text-gray-600 leading-relaxed">{recipe.description}</p>
+          <p className="mt-3 text-foreground/80 leading-relaxed">{recipe.description}</p>
         )}
       </div>
 
       {/* Ingredients */}
       {recipe.ingredients.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">食材</h2>
-          <div className="bg-orange-50 rounded-xl overflow-hidden">
+          <h2 className="text-lg font-semibold text-foreground mb-3">食材</h2>
+          <div className="bg-muted rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-orange-100">
-                  <th className="text-left px-4 py-2.5 font-medium text-gray-600">食材</th>
-                  <th className="text-right px-4 py-2.5 font-medium text-gray-600">用量</th>
-                  <th className="text-right px-4 py-2.5 font-medium text-gray-600">单位</th>
+                <tr className="border-b border-border">
+                  <th className="text-left px-4 py-2.5 font-medium text-foreground">食材</th>
+                  <th className="text-right px-4 py-2.5 font-medium text-foreground">用量</th>
+                  <th className="text-right px-4 py-2.5 font-medium text-foreground">单位</th>
                 </tr>
               </thead>
               <tbody>
                 {recipe.ingredients.map((ing, i) => (
-                  <tr key={i} className="border-b border-orange-100 last:border-0">
-                    <td className="px-4 py-2.5 text-gray-800">{ing.name}</td>
-                    <td className="px-4 py-2.5 text-right text-gray-700">{ing.amount}</td>
-                    <td className="px-4 py-2.5 text-right text-gray-500">{ing.unit}</td>
+                  <tr key={i} className="border-b border-border last:border-0">
+                    <td className="px-4 py-2.5 text-foreground">{ing.name}</td>
+                    <td className="px-4 py-2.5 text-right text-foreground/80">{ing.amount}</td>
+                    <td className="px-4 py-2.5 text-right text-muted-foreground">{ing.unit}</td>
                   </tr>
                 ))}
               </tbody>
@@ -219,15 +219,15 @@ export default function RecipeDetailPage() {
       {/* Steps */}
       {recipe.steps.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">步骤</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-3">步骤</h2>
           <div className="space-y-4">
             {recipe.steps.map((step) => (
               <div key={step.order} className="flex gap-4">
-                <div className="shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                <div className="shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
                   {step.order}
                 </div>
                 <div className="flex-1 pt-1">
-                  <p className="text-gray-700 leading-relaxed">{step.description}</p>
+                  <p className="text-foreground/80 leading-relaxed">{step.description}</p>
                   {step.imagePath && (
                     <img
                       src={step.imagePath}
@@ -245,13 +245,13 @@ export default function RecipeDetailPage() {
       {/* Cooking Records Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-foreground">
             做菜记录 {cookingRecords.length > 0 && `(${cookingRecords.length})`}
           </h2>
           {cookingRecords.length > 5 && (
             <Link
               to={`/cooking-records?recipeId=${recipe.id}`}
-              className="text-sm text-blue-600 hover:text-blue-700"
+              className="text-sm text-primary hover:text-primary/80"
             >
               查看全部
             </Link>
@@ -274,7 +274,7 @@ export default function RecipeDetailPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-400 text-sm">
+          <div className="text-center py-8 text-muted-foreground text-sm">
             还没有做菜记录，快来记录第一次吧
           </div>
         )}
@@ -294,13 +294,13 @@ export default function RecipeDetailPage() {
             <DialogTitle>分享菜谱</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-gray-500">任何人都可以通过以下链接查看此菜谱：</p>
+            <p className="text-sm text-muted-foreground">任何人都可以通过以下链接查看此菜谱：</p>
             <div className="flex items-center gap-2">
-              <div className="flex-1 bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700 break-all">
+              <div className="flex-1 bg-muted border border-border rounded-md px-3 py-2 text-sm text-foreground break-all">
                 {shareUrl}
               </div>
               <Button variant="outline" size="icon" onClick={handleCopyLink}>
-                {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                {copied ? <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
           </div>

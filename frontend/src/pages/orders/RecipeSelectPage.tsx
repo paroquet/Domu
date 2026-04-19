@@ -74,17 +74,17 @@ export default function RecipeSelectPage() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           返回
         </button>
-        <h1 className="text-xl font-bold text-gray-900">选择菜谱</h1>
+        <h1 className="text-xl font-bold text-foreground">选择菜谱</h1>
       </div>
 
       {/* Search input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="搜索菜谱..."
           value={searchQuery}
@@ -97,13 +97,13 @@ export default function RecipeSelectPage() {
       {isLoading ? (
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />
+            <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />
           ))}
         </div>
       ) : filteredRecipes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <ChefHat className="h-12 w-12 text-gray-300 mb-3" />
-          <p className="text-gray-500">
+          <ChefHat className="h-12 w-12 text-muted-foreground mb-3" />
+          <p className="text-muted-foreground">
             {searchQuery ? '没有找到匹配的菜谱' : '还没有菜谱'}
           </p>
         </div>
@@ -116,8 +116,8 @@ export default function RecipeSelectPage() {
                 key={recipe.id}
                 className={`cursor-pointer transition-all ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-50/50 shadow-md'
-                    : 'hover:shadow-md hover:border-gray-300'
+                    ? 'border-primary bg-primary/10 shadow-md'
+                    : 'hover:shadow-md hover:border-border'
                 }`}
                 onClick={() => handleToggle(recipe.id)}
               >
@@ -135,19 +135,19 @@ export default function RecipeSelectPage() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 truncate">{recipe.title}</h3>
+                      <h3 className="font-medium text-foreground truncate">{recipe.title}</h3>
                       {recipe.description && (
-                        <p className="text-xs text-gray-500 truncate mt-0.5">{recipe.description}</p>
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">{recipe.description}</p>
                       )}
                     </div>
                     <div
                       className={`shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
                         isSelected
-                          ? 'bg-blue-600 border-blue-600'
-                          : 'border-gray-300 bg-white'
+                          ? 'bg-primary border-primary'
+                          : 'border-border bg-background'
                       }`}
                     >
-                      {isSelected && <Check className="h-4 w-4 text-white" />}
+                      {isSelected && <Check className="h-4 w-4 text-primary-foreground" />}
                     </div>
                   </div>
                 </CardContent>
@@ -159,10 +159,10 @@ export default function RecipeSelectPage() {
 
       {/* Bottom confirm bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-14 md:bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
+        <div className="fixed bottom-14 md:bottom-0 left-0 right-0 bg-background border-t border-border p-4 shadow-lg z-50">
           <div className="max-w-5xl mx-auto flex items-center gap-4">
-            <div className="flex-1 text-sm text-gray-600">
-              已选择 <span className="font-semibold text-blue-600">{selectedIds.size}</span> 道菜
+            <div className="flex-1 text-sm text-foreground/80">
+              已选择 <span className="font-semibold text-primary">{selectedIds.size}</span> 道菜
             </div>
             <Button onClick={handleConfirm} disabled={isSubmitting}>
               {isSubmitting ? '提交中...' : '确认点菜'}

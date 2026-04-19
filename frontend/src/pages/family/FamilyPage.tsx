@@ -173,9 +173,9 @@ export default function FamilyPage() {
     return (
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center">
-          <Users className="h-16 w-16 text-gray-300 mx-auto mb-3" />
-          <h1 className="text-2xl font-bold text-gray-900">家庭管理</h1>
-          <p className="text-gray-500 mt-1">创建或加入一个家庭开始使用</p>
+          <Users className="h-16 w-16 text-muted-foreground mx-auto mb-3" />
+          <h1 className="text-2xl font-bold text-foreground">家庭管理</h1>
+          <p className="text-muted-foreground mt-1">创建或加入一个家庭开始使用</p>
         </div>
 
         <Tabs defaultValue="create">
@@ -245,22 +245,22 @@ export default function FamilyPage() {
   if (familyLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-32 bg-gray-100 rounded-xl animate-pulse" />
-        <div className="h-48 bg-gray-100 rounded-xl animate-pulse" />
+        <div className="h-32 bg-muted rounded-xl animate-pulse" />
+        <div className="h-48 bg-muted rounded-xl animate-pulse" />
       </div>
     )
   }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">家庭管理</h1>
+      <h1 className="text-2xl font-bold text-foreground">家庭管理</h1>
 
       {/* Family info */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-600" />
+              <Users className="h-4 w-4 text-primary" />
               {family?.name}
             </CardTitle>
             <div className="flex items-center gap-2">
@@ -277,7 +277,7 @@ export default function FamilyPage() {
                       <DropdownMenuItem
                         key={f.id}
                         onClick={() => handleFamilySwitch(f.id)}
-                        className={cn(f.id === currentFamilyId && 'bg-blue-50 text-blue-600')}
+                        className={cn(f.id === currentFamilyId && 'bg-primary/10 text-primary')}
                       >
                         {f.name}
                       </DropdownMenuItem>
@@ -317,7 +317,7 @@ export default function FamilyPage() {
               {isAdmin && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 gap-1">
+                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive gap-1">
                       <Trash2 className="h-4 w-4" />
                       删除家庭
                     </Button>
@@ -333,7 +333,7 @@ export default function FamilyPage() {
                       <AlertDialogCancel>取消</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => deleteFamilyMutation.mutate()}
-                        className="bg-red-500 hover:bg-red-600"
+                        className="bg-destructive hover:bg-destructive/90"
                       >
                         删除
                       </AlertDialogAction>
@@ -348,13 +348,13 @@ export default function FamilyPage() {
         <CardContent className="space-y-4">
           <Separator />
           <div>
-            <Label className="text-xs text-gray-500 mb-2 block">邀请码</Label>
+            <Label className="text-xs text-muted-foreground mb-2 block">邀请码</Label>
             <div className="flex items-center gap-2">
-              <div className="flex-1 bg-gray-50 border border-gray-200 rounded-md px-3 py-2 font-mono text-sm tracking-widest text-gray-800">
+              <div className="flex-1 bg-muted border border-border rounded-md px-3 py-2 font-mono text-sm tracking-widest text-foreground">
                 {inviteCode}
               </div>
               <Button variant="outline" size="icon" onClick={handleCopyCode}>
-                {copiedCode ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                {copiedCode ? <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="h-4 w-4" />}
               </Button>
               {isAdmin && (
                 <Button
@@ -368,7 +368,7 @@ export default function FamilyPage() {
                 </Button>
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-1">将邀请码分享给家庭成员，让他们加入</p>
+            <p className="text-xs text-muted-foreground mt-1">将邀请码分享给家庭成员，让他们加入</p>
           </div>
         </CardContent>
       </Card>
@@ -389,7 +389,7 @@ export default function FamilyPage() {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900">{member.name}</span>
+                    <span className="font-medium text-foreground">{member.name}</span>
                     {member.role === 'ADMIN' ? (
                       <Badge variant="default" className="text-xs px-1.5 py-0">
                         <Crown className="h-2.5 w-2.5 mr-0.5" />
@@ -402,7 +402,7 @@ export default function FamilyPage() {
                       <Badge variant="outline" className="text-xs px-1.5 py-0">我</Badge>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500 truncate">{member.email}</p>
+                  <p className="text-sm text-muted-foreground truncate">{member.email}</p>
                 </div>
 
                 {/* Admin actions */}
@@ -411,7 +411,7 @@ export default function FamilyPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-gray-400 hover:text-blue-600"
+                      className="h-8 w-8 text-muted-foreground hover:text-primary"
                       title={member.role === 'ADMIN' ? '降为成员' : '设为管理员'}
                       onClick={() =>
                         updateRoleMutation.mutate({
@@ -428,7 +428,7 @@ export default function FamilyPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-gray-400 hover:text-red-600"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
                           title="移出家庭"
                         >
                           <UserMinus className="h-4 w-4" />
@@ -445,7 +445,7 @@ export default function FamilyPage() {
                           <AlertDialogCancel>取消</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => removeMemberMutation.mutate(member.userId)}
-                            className="bg-red-500 hover:bg-red-600"
+                            className="bg-destructive hover:bg-destructive/90"
                           >
                             移出
                           </AlertDialogAction>

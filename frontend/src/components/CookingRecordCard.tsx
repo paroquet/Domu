@@ -22,20 +22,20 @@ export default function CookingRecordCard({ record, hideRecipeTitle = false }: C
               className="w-20 h-20 rounded-lg object-cover shrink-0"
             />
           ) : (
-            <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center shrink-0">
-              <ChefHat className="h-8 w-8 text-orange-300" />
+            <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center shrink-0">
+              <ChefHat className="h-8 w-8 text-primary/40" />
             </div>
           )}
           <div className="flex-1 min-w-0">
             {!hideRecipeTitle && (
-              <h3 className="font-semibold text-gray-900 truncate">{record.recipeTitle}</h3>
+              <h3 className="font-semibold text-foreground truncate">{record.recipeTitle}</h3>
             )}
             {record.notes && (
-              <p className={`text-sm text-gray-500 line-clamp-2 ${hideRecipeTitle ? '' : 'mt-1'}`}>
+              <p className={`text-sm text-muted-foreground line-clamp-2 ${hideRecipeTitle ? '' : 'mt-1'}`}>
                 {record.notes}
               </p>
             )}
-            <div className={`flex items-center gap-3 text-xs text-gray-400 ${record.notes || !hideRecipeTitle ? 'mt-2' : 'mt-1'}`}>
+            <div className={`flex items-center gap-3 text-xs text-muted-foreground ${record.notes || !hideRecipeTitle ? 'mt-2' : 'mt-1'}`}>
               <span className="flex items-center gap-1">
                 <User className="h-3 w-3" />
                 {record.userName}
@@ -45,7 +45,7 @@ export default function CookingRecordCard({ record, hideRecipeTitle = false }: C
                 {format(new Date(record.cookedAt), 'MM月dd日 HH:mm', { locale: zhCN })}
               </span>
               {record.images.length > 1 && (
-                <span className="text-gray-300">{record.images.length} 张图片</span>
+                <span className="text-muted-foreground/60">{record.images.length} 张图片</span>
               )}
             </div>
           </div>

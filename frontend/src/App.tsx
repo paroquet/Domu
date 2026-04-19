@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Layout from '@/components/Layout'
+import { ThemeProvider } from '@/components/ThemeProvider'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import SharePage from '@/pages/recipes/SharePage'
@@ -17,7 +18,7 @@ import ProfilePage from '@/pages/profile/ProfilePage'
 
 export default function App() {
   return (
-    <>
+    <ThemeProvider>
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -45,6 +46,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster />
-    </>
+    </ThemeProvider>
   )
 }

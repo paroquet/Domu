@@ -90,12 +90,12 @@ export default function CookingRecordFormPage() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           返回
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">新建做菜记录</h1>
+        <h1 className="text-2xl font-bold text-foreground">新建做菜记录</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -128,7 +128,7 @@ export default function CookingRecordFormPage() {
                 value={cookedAt}
                 onChange={(e) => setCookedAt(e.target.value)}
                 required
-                className="flex h-9 w-full rounded-md border border-gray-200 bg-white px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
 
@@ -163,13 +163,13 @@ export default function CookingRecordFormPage() {
                   </button>
                 </div>
               ))}
-              <label className="aspect-square border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-gray-300 transition-colors">
+              <label className="aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-muted-foreground transition-colors">
                 {uploading ? (
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 ) : (
                   <>
-                    <Plus className="h-5 w-5 text-gray-400" />
-                    <span className="text-xs text-gray-400">添加图片</span>
+                    <Plus className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">添加图片</span>
                   </>
                 )}
                 <input
