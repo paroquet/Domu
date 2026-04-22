@@ -15,6 +15,13 @@ class SpaErrorController : ErrorController {
 
     private val indexHtml = ClassPathResource("static/index.html")
 
+    @GetMapping("/share/**")
+    @ResponseBody
+    fun serveShareSpa(): ResponseEntity<ClassPathResource> =
+        ResponseEntity.ok()
+            .contentType(MediaType.TEXT_HTML)
+            .body(indexHtml)
+
     @GetMapping("/error")
     @ResponseBody
     fun handleError(request: HttpServletRequest): ResponseEntity<*> {

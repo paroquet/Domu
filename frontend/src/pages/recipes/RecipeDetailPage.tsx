@@ -185,7 +185,7 @@ export default function RecipeDetailPage() {
           <span>{format(new Date(recipe.updatedAt), 'yyyy年MM月dd日', { locale: zhCN })}</span>
         </div>
         {recipe.description && (
-          <p className="mt-3 text-foreground/80 leading-relaxed">{recipe.description}</p>
+          <p className="mt-3 text-foreground/80 leading-relaxed whitespace-pre-line">{recipe.description}</p>
         )}
       </div>
 
@@ -227,7 +227,7 @@ export default function RecipeDetailPage() {
                   {step.order}
                 </div>
                 <div className="flex-1 pt-1">
-                  <p className="text-foreground/80 leading-relaxed">{step.description}</p>
+                  <p className="text-foreground/80 leading-relaxed whitespace-pre-line">{step.description}</p>
                   {step.imagePath && (
                     <img
                       src={step.imagePath}

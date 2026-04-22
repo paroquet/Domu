@@ -291,7 +291,7 @@ class RecipeServiceTest {
         val result = recipeService.share(1L, 1L, "http://localhost:8080")
 
         assertThat(result.shareToken).isNotEmpty
-        assertThat(result.shareUrl).contains("/api/v1/recipes/shared/")
+        assertThat(result.shareUrl).contains("/share/")
     }
 
     @Test

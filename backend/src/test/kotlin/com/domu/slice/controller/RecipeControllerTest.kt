@@ -249,7 +249,7 @@ class RecipeControllerTest {
     fun `POST recipes id share - 生成分享链接`() {
         val shareResponse = ShareResponse(
             shareToken = "abc123",
-            shareUrl = "http://localhost:8080/api/v1/recipes/shared/abc123"
+            shareUrl = "http://localhost:8080/share/abc123"
         )
         every { recipeService.share(1L, userId, "http://localhost:8080") } returns shareResponse
 
@@ -258,7 +258,7 @@ class RecipeControllerTest {
         }.andExpect {
             status { isOk() }
             jsonPath("$.shareToken") { value("abc123") }
-            jsonPath("$.shareUrl") { value("http://localhost:8080/api/v1/recipes/shared/abc123") }
+            jsonPath("$.shareUrl") { value("http://localhost:8080/share/abc123") }
         }
     }
 

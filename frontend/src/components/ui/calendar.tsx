@@ -15,7 +15,7 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-4 bg-background", className)}
+      className={cn("p-4 bg-background text-foreground", className)}
       classNames={{
         months: "flex flex-col sm:flex-row gap-4",
         month: "flex flex-col gap-4 relative",

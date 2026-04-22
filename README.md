@@ -6,3 +6,14 @@
 ## 名字来源
 
 Domu 来源拉丁语 Domus，意为“家/屋檐”。跟日语 "どうも - Doumo" 谐音，"Domu~ 饭好啦，趁热吃吧！"
+
+
+## Quick Start
+
+```
+cd backend
+./gradlew bootRun --args='--spring.profiles.active=dev'
+
+cd frontend
+npm run dev
+```

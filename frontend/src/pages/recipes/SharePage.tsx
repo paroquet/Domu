@@ -68,7 +68,7 @@ export default function SharePage() {
           <h1 className="text-2xl font-bold text-foreground">{recipe.title}</h1>
           <p className="text-sm text-muted-foreground mt-1">由 {recipe.authorName} 分享</p>
           {recipe.description && (
-            <p className="mt-3 text-foreground/80 leading-relaxed">{recipe.description}</p>
+            <p className="mt-3 text-foreground/80 leading-relaxed whitespace-pre-line">{recipe.description}</p>
           )}
         </div>
 
@@ -110,7 +110,7 @@ export default function SharePage() {
                     {step.order}
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className="text-foreground/80 leading-relaxed">{step.description}</p>
+                    <p className="text-foreground/80 leading-relaxed whitespace-pre-line">{step.description}</p>
                     {step.imagePath && (
                       <img
                         src={step.imagePath}
