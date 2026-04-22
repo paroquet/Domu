@@ -41,6 +41,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from '@/components/ui/use-toast'
 import { cn } from '@/lib/utils'
+import { copyTextToClipboard } from '@/lib/clipboard'
 
 export default function FamilyPage() {
   const { currentFamilyId, families, setCurrentFamilyId, setFamilies } = useFamilyStore()
@@ -149,12 +150,12 @@ export default function FamilyPage() {
   const inviteCode = localInviteCode ?? family?.inviteCode ?? ''
 
   const handleCopyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(inviteCode)
+    const ok = await copyTextToClipboard(inviteCode)
+    if (ok) {
       setCopiedCode(true)
       setTimeout(() => setCopiedCode(false), 2000)
-    } catch {
-      toast({ title: '复制失败', variant: 'destructive' })
+    } else {
+      toast({ title: '复制失败，请长按邀请码手动复制', variant: 'destructive' })
     }
   }
 

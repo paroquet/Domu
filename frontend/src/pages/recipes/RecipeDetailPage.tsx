@@ -5,6 +5,7 @@ import { Edit, Trash2, Share2, ChefHat, ArrowLeft, ClipboardList, Copy, Check } 
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { getRecipe, deleteRecipe, shareRecipe } from '@/api/recipe'
+import { copyTextToClipboard } from '@/lib/clipboard'
 import { getCookingRecords } from '@/api/cookingRecord'
 import { useAuthStore } from '@/stores/authStore'
 import { useFamilyStore } from '@/stores/familyStore'
@@ -76,12 +77,12 @@ export default function RecipeDetailPage() {
   })
 
   const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl)
+    const ok = await copyTextToClipboard(shareUrl)
+    if (ok) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch {
-      toast({ title: '复制失败', variant: 'destructive' })
+    } else {
+      toast({ title: '复制失败，请长按链接手动复制', variant: 'destructive' })
     }
   }
 
@@ -296,7 +297,7 @@ export default function RecipeDetailPage() {
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">任何人都可以通过以下链接查看此菜谱：</p>
             <div className="flex items-center gap-2">
-              <div className="flex-1 bg-muted border border-border rounded-md px-3 py-2 text-sm text-foreground break-all">
+              <div className="flex-1 bg-muted border border-border rounded-md px-3 py-2 text-sm text-foreground break-all select-all">
                 {shareUrl}
               </div>
               <Button variant="outline" size="icon" onClick={handleCopyLink}>
