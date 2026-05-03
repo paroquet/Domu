@@ -4,10 +4,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Edit, Trash2, Share2, ChefHat, ArrowLeft, ClipboardList, Copy, Check } from 'lucide-react'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
+import ImageLightbox from '@/components/ImageLightbox'
 import { getRecipe, deleteRecipe, shareRecipe } from '@/api/recipe'
 import { copyTextToClipboard } from '@/lib/clipboard'
 import { getCookingRecords } from '@/api/cookingRecord'
-import { useAuthStore } from '@/stores/authStore'
 import { useFamilyStore } from '@/stores/familyStore'
 import CookingRecordCard from '@/components/CookingRecordCard'
 import { Button } from '@/components/ui/button'
@@ -35,11 +35,12 @@ export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { user } = useAuthStore()
   const { currentFamilyId } = useFamilyStore()
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState('')
   const [copied, setCopied] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
   const { data: recipe, isLoading } = useQuery({
     queryKey: ['recipe', id],
@@ -68,7 +69,7 @@ export default function RecipeDetailPage() {
   const shareMutation = useMutation({
     mutationFn: () => shareRecipe(Number(id)),
     onSuccess: (data) => {
-      setShareUrl(data.shareUrl || `${window.location.origin}/share/${data.shareToken}`)
+      setShareUrl(`${window.location.origin}/share/${data.shareToken}`)
       setShareDialogOpen(true)
     },
     onError: () => {
@@ -107,7 +108,24 @@ export default function RecipeDetailPage() {
     )
   }
 
-  const isAuthor = user?.id === recipe.authorId
+  const slides = [
+    ...(recipe.coverImagePath ? [{ src: recipe.coverImagePath }] : []),
+    ...recipe.steps.filter(s => s.imagePath).map(s => ({ src: s.imagePath! })),
+  ]
+
+  const coverSlideIndex = recipe.coverImagePath ? 0 : -1
+  const stepSlideIndex = (stepOrder: number) => {
+    const hasCover = recipe.coverImagePath ? 1 : 0
+    const stepsWithImg = recipe.steps.filter(s => s.imagePath)
+    const idx = stepsWithImg.findIndex(s => s.order === stepOrder)
+    return idx === -1 ? -1 : hasCover + idx
+  }
+
+  const openLightbox = (index: number) => {
+    if (index < 0 || slides.length === 0) return
+    setLightboxIndex(index)
+    setLightboxOpen(true)
+  }
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -123,7 +141,12 @@ export default function RecipeDetailPage() {
       {/* Cover image */}
       <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
         {recipe.coverImagePath ? (
-          <img src={recipe.coverImagePath} alt={recipe.title} className="w-full h-full object-cover" />
+          <img
+            src={recipe.coverImagePath}
+            alt={recipe.title}
+            className="w-full h-full object-cover cursor-pointer"
+            onClick={() => openLightbox(coverSlideIndex)}
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ChefHat className="h-20 w-20 text-primary/40" />
@@ -145,39 +168,35 @@ export default function RecipeDetailPage() {
               <Share2 className="h-4 w-4" />
               分享
             </Button>
-            {isAuthor && (
-              <>
-                <Button variant="outline" size="sm" asChild>
-                  <Link to={`/recipes/${recipe.id}/edit`}>
-                    <Edit className="h-4 w-4" />
-                  </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link to={`/recipes/${recipe.id}/edit`}>
+                <Edit className="h-4 w-4" />
+              </Link>
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>删除菜谱</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        确定要删除「{recipe.title}」吗？此操作无法撤销。
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>取消</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => deleteMutation.mutate()}
-                        className="bg-destructive hover:bg-destructive/90"
-                      >
-                        删除
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </>
-            )}
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>删除菜谱</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    确定要删除「{recipe.title}」吗？此操作无法撤销。
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>取消</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => deleteMutation.mutate()}
+                    className="bg-destructive hover:bg-destructive/90"
+                  >
+                    删除
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
         <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
@@ -233,7 +252,8 @@ export default function RecipeDetailPage() {
                     <img
                       src={step.imagePath}
                       alt={`步骤 ${step.order}`}
-                      className="mt-3 rounded-lg w-full max-w-sm object-cover"
+                      className="mt-3 rounded-lg w-full max-w-sm object-cover cursor-pointer"
+                      onClick={() => openLightbox(stepSlideIndex(step.order))}
                     />
                   )}
                 </div>
@@ -287,6 +307,14 @@ export default function RecipeDetailPage() {
           <Badge variant="secondary">可分享</Badge>
         </div>
       )}
+
+      {/* Lightbox */}
+      <ImageLightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        index={lightboxIndex}
+        slides={slides}
+      />
 
       {/* Share dialog */}
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>

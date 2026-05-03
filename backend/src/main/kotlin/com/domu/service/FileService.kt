@@ -24,12 +24,14 @@ class FileService(private val appProperties: AppProperties) {
             if (it.isNotBlank()) ".$it" else ""
         }
         val filename = "${UUID.randomUUID()}$extension"
-
-        val uploadPath = Paths.get(appProperties.uploadDir)
+        // 使文件上传测试环境和先上环境都生效
+        // /app/data/uploads 本身已经是绝对路径，toAbsolutePath() 对绝对路径是空操作，直接原样返回。
+        // 只有相对路径（如 ./data/uploads）才会被转换成基于进程工作目录的绝对路径。
+        val uploadPath = Paths.get(appProperties.uploadDir).toAbsolutePath()
         Files.createDirectories(uploadPath)
 
         val filePath = uploadPath.resolve(filename)
-        file.transferTo(filePath.toFile())
+        Files.copy(file.inputStream, filePath)
 
         val relativePath = "/files/$filename"
         val url = "$baseUrl$relativePath"

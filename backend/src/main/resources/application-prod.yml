@@ -10,8 +10,7 @@ spring:
     baseline-on-migrate: true
 
 app:
-  upload:
-    dir: /app/data/uploads
+  upload-dir: ${DATA_DIR:/app/data}/uploads
   base-url: ${BASE_URL:http://localhost:8080}
   jwt:
     secret: ${JWT_SECRET}

@@ -42,7 +42,7 @@ export default function LoginPage() {
           <div className="bg-primary text-primary-foreground rounded-2xl p-3 mb-3">
             <ChefHat className="h-8 w-8" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Domu 家庭餐饮</h1>
+          <h1 className="text-2xl font-bold text-foreground">家肴</h1>
           <p className="text-muted-foreground text-sm mt-1">记录家庭的每一餐美味</p>
         </div>
 
