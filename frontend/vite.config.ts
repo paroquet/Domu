@@ -73,6 +73,21 @@ export default defineConfig({
       },
       workbox: {
         // 不使用 skipWaiting，让 SW 进入 waiting 状态，触发用户更新提示
+        runtimeCaching: [
+          {
+            // 用户上传图片：UUID 文件名，内容不可变，可长期缓存
+            urlPattern: ({ url }) => url.pathname.startsWith('/files/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'domu-uploads',
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 * 30
+              },
+              cacheableResponse: { statuses: [0, 200] }
+            }
+          }
+        ]
       }
     }),
     // Plugin to generate version.json at build time

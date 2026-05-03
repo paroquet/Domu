@@ -47,10 +47,10 @@ class OrderRepositoryTest {
             User(email = "user2@test.com", passwordHash = "h", name = "用户2")
         )
         testFamily1 = entityManager.persistAndFlush(
-            Family(name = "家庭1", inviteCode = "FAMILY01")
+            Family(name = "家庭1", inviteCode = "FAMILY01", createdAt = java.time.Instant.now())
         )
         testFamily2 = entityManager.persistAndFlush(
-            Family(name = "家庭2", inviteCode = "FAMILY02")
+            Family(name = "家庭2", inviteCode = "FAMILY02", createdAt = java.time.Instant.now())
         )
         testRecipe = entityManager.persistAndFlush(
             Recipe(

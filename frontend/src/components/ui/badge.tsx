@@ -3,21 +3,23 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-blue-600 text-white shadow hover:bg-blue-700",
+          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/90",
         secondary:
-          "border-transparent bg-gray-100 text-gray-900 hover:bg-gray-200",
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive:
-          "border-transparent bg-red-500 text-white shadow hover:bg-red-600",
-        outline: "text-gray-950",
+          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/90",
+        outline: "text-foreground border-border",
         success:
-          "border-transparent bg-green-100 text-green-800",
+          "border-transparent bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] hover:bg-[hsl(var(--success))]/90",
         warning:
-          "border-transparent bg-yellow-100 text-yellow-800",
+          "border-transparent bg-[hsl(var(--warning))] text-[hsl(var(--warning-foreground))] hover:bg-[hsl(var(--warning))]/90",
+        info:
+          "border-transparent bg-[hsl(var(--info))] text-[hsl(var(--info-foreground))] hover:bg-[hsl(var(--info))]/90",
       },
     },
     defaultVariants: {

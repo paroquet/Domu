@@ -3,6 +3,11 @@ spring:
     url: jdbc:sqlite:/app/data/domu.db?busy_timeout=30000&journal_mode=WAL
   jpa:
     show-sql: false
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
 
 app:
   upload-dir: ${DATA_DIR:/app/data}/uploads

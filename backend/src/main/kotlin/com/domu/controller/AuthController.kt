@@ -1,14 +1,13 @@
 package com.domu.controller
 
 import com.domu.config.JwtProperties
-import com.domu.dto.FamilySummaryResponse
 import com.domu.dto.LoginRequest
 import com.domu.dto.RegisterRequest
 import com.domu.dto.TokenResponse
 import com.domu.dto.UserResponse
-import com.domu.repository.FamilyMemberRepository
 import com.domu.security.JwtTokenProvider
 import com.domu.service.AuthService
+import com.domu.service.FamilyService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpHeaders
@@ -27,7 +26,7 @@ class AuthController(
     private val authService: AuthService,
     private val jwtTokenProvider: JwtTokenProvider,
     private val jwtProperties: JwtProperties,
-    private val familyMemberRepository: FamilyMemberRepository
+    private val familyService: FamilyService
 ) {
 
     @PostMapping("/register")
@@ -42,7 +41,7 @@ class AuthController(
         val isSecure = httpRequest.isSecure
         response.addHeader(HttpHeaders.SET_COOKIE, createCookie("access_token", accessToken, jwtProperties.accessExpiration / 1000, isSecure).toString())
         response.addHeader(HttpHeaders.SET_COOKIE, createCookie("refresh_token", refreshToken, jwtProperties.refreshExpiration / 1000, isSecure).toString())
-        val families = getFamiliesForUser(userResponse.id)
+        val families = familyService.getFamiliesForUser(userResponse.id)
         return ResponseEntity.status(HttpStatus.CREATED).body(
             UserResponse(
                 id = userResponse.id,
@@ -66,7 +65,7 @@ class AuthController(
         val isSecure = httpRequest.isSecure
         response.addHeader(HttpHeaders.SET_COOKIE, createCookie("access_token", accessToken, jwtProperties.accessExpiration / 1000, isSecure).toString())
         response.addHeader(HttpHeaders.SET_COOKIE, createCookie("refresh_token", refreshToken, jwtProperties.refreshExpiration / 1000, isSecure).toString())
-        val families = getFamiliesForUser(user.id)
+        val families = familyService.getFamiliesForUser(user.id)
         return ResponseEntity.ok(
             UserResponse(
                 id = user.id,
@@ -119,14 +118,4 @@ class AuthController(
             .maxAge(maxAge)
             .sameSite("Lax")
             .build()
-
-    private fun getFamiliesForUser(userId: Long): List<FamilySummaryResponse> {
-        val familyMembers = familyMemberRepository.findByUser_IdWithFamily(userId)
-        return familyMembers.map { member ->
-            FamilySummaryResponse(
-                id = member.family.id,
-                name = member.family.name
-            )
-        }
-    }
 }

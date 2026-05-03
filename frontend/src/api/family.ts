@@ -1,5 +1,10 @@
 import client from './client'
-import type { Family, FamilyMember } from '@/types'
+import type { Family, FamilyMember, FamilySummary } from '@/types'
+
+export async function getFamilyList(): Promise<FamilySummary[]> {
+  const res = await client.get<FamilySummary[]>('/families')
+  return res.data
+}
 
 export async function createFamily(name: string): Promise<Family> {
   const res = await client.post<Family>('/families', { name })
@@ -32,4 +37,8 @@ export async function updateMemberRole(familyId: number, userId: number, role: '
 
 export async function removeMember(familyId: number, userId: number): Promise<void> {
   await client.delete(`/families/${familyId}/members/${userId}`)
+}
+
+export async function deleteFamily(familyId: number): Promise<void> {
+  await client.delete(`/families/${familyId}`)
 }

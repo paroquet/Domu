@@ -269,7 +269,7 @@ class RecipeIntegrationTest {
         assertThat(shareResp.statusCode).isEqualTo(HttpStatus.OK)
         val body = objectMapper.readTree(shareResp.body)
         assertThat(body["shareToken"].asText()).isNotEmpty
-        assertThat(body["shareUrl"].asText()).contains("/api/v1/recipes/shared/")
+        assertThat(body["shareUrl"].asText()).contains("/share/")
     }
 
     @Test

@@ -37,8 +37,8 @@ class FamilyMemberRepositoryTest {
 
     @BeforeEach
     fun setUp() {
-        familyA = entityManager.persistAndFlush(Family(name = "家庭A", inviteCode = "AAAA1111"))
-        familyB = entityManager.persistAndFlush(Family(name = "家庭B", inviteCode = "BBBB2222"))
+        familyA = entityManager.persistAndFlush(Family(name = "家庭A", inviteCode = "AAAA1111", createdAt = java.time.Instant.now()))
+        familyB = entityManager.persistAndFlush(Family(name = "家庭B", inviteCode = "BBBB2222", createdAt = java.time.Instant.now()))
         userAdmin = entityManager.persistAndFlush(
             User(email = "admin@test.com", passwordHash = "h", name = "管理员")
         )

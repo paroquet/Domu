@@ -21,6 +21,12 @@ class FamilyController(
         return ResponseEntity.status(HttpStatus.CREATED).body(familyService.create(userId, request))
     }
 
+    @GetMapping
+    fun getFamilies(): ResponseEntity<List<FamilySummaryResponse>> {
+        val userId = getCurrentUserId()
+        return ResponseEntity.ok(familyService.getFamiliesForUser(userId))
+    }
+
     @GetMapping("/{id}")
     fun getFamily(@PathVariable id: Long): ResponseEntity<FamilyResponse> {
         val userId = getCurrentUserId()
@@ -72,6 +78,13 @@ class FamilyController(
     ): ResponseEntity<Void> {
         val userId = getCurrentUserId()
         familyService.removeMember(id, uid, userId)
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/{id}")
+    fun deleteFamily(@PathVariable id: Long): ResponseEntity<Void> {
+        val userId = getCurrentUserId()
+        familyService.deleteFamily(id, userId)
         return ResponseEntity.noContent().build()
     }
 

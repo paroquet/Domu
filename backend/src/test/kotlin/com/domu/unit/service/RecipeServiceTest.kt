@@ -51,7 +51,7 @@ class RecipeServiceTest {
     private lateinit var recipeService: RecipeService
 
     private val testUser = User(id = 1L, email = "test@test.com", passwordHash = "h", name = "测试用户")
-    private val testFamily = Family(id = 10L, name = "测试家庭", inviteCode = "ABC12345")
+    private val testFamily = Family(id = 10L, name = "测试家庭", inviteCode = "ABC12345", createdAt = java.time.Instant.now())
     private val testFamilyMember = FamilyMember(
         id = FamilyMemberId(10L, 1L),
         family = testFamily,
@@ -291,7 +291,7 @@ class RecipeServiceTest {
         val result = recipeService.share(1L, 1L, "http://localhost:8080")
 
         assertThat(result.shareToken).isNotEmpty
-        assertThat(result.shareUrl).contains("/api/v1/recipes/shared/")
+        assertThat(result.shareUrl).contains("/share/")
     }
 
     @Test

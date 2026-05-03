@@ -61,7 +61,7 @@ export default function ImageUpload({ value, onChange, className, placeholder = 
     <div
       className={cn(
         'relative rounded-lg border-2 border-dashed transition-colors cursor-pointer',
-        dragging ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-300',
+        dragging ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/30',
         className
       )}
       onClick={() => inputRef.current?.click()}
@@ -86,22 +86,22 @@ export default function ImageUpload({ value, onChange, className, placeholder = 
           <button
             type="button"
             onClick={handleClear}
-            className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition-colors"
+            className="absolute top-2 right-2 bg-background rounded-full p-1 shadow-md hover:bg-accent transition-colors"
           >
-            <X className="h-4 w-4 text-gray-600" />
+            <X className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center gap-2 p-8 text-gray-400">
+        <div className="flex flex-col items-center justify-center gap-2 p-8 text-muted-foreground">
           {uploading ? (
             <div className="flex flex-col items-center gap-2">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               <span className="text-sm">上传中...</span>
             </div>
           ) : (
             <>
               {dragging ? (
-                <Upload className="h-8 w-8 text-blue-400" />
+                <Upload className="h-8 w-8 text-primary" />
               ) : (
                 <ImageIcon className="h-8 w-8" />
               )}

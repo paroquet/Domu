@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Layout from '@/components/Layout'
+import { ThemeProvider } from '@/components/ThemeProvider'
 import UpdatePrompt from '@/components/UpdatePrompt'
 import { useRegisterSW } from '@/hooks/useRegisterSW'
 import LoginPage from '@/pages/auth/LoginPage'
@@ -12,6 +13,7 @@ import RecipeDetailPage from '@/pages/recipes/RecipeDetailPage'
 import RecipeFormPage from '@/pages/recipes/RecipeFormPage'
 import CookingRecordListPage from '@/pages/cooking-records/CookingRecordListPage'
 import CookingRecordFormPage from '@/pages/cooking-records/CookingRecordFormPage'
+import CookingRecordDetailPage from '@/pages/cooking-records/CookingRecordDetailPage'
 import FamilyPage from '@/pages/family/FamilyPage'
 import OrderPage from '@/pages/orders/OrderPage'
 import RecipeSelectPage from '@/pages/orders/RecipeSelectPage'
@@ -21,7 +23,7 @@ export default function App() {
   useRegisterSW()
 
   return (
-    <>
+    <ThemeProvider>
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -38,6 +40,7 @@ export default function App() {
             <Route path="/recipes/:id/edit" element={<RecipeFormPage />} />
             <Route path="/cooking-records" element={<CookingRecordListPage />} />
             <Route path="/cooking-records/new" element={<CookingRecordFormPage />} />
+            <Route path="/cooking-records/:id" element={<CookingRecordDetailPage />} />
             <Route path="/family" element={<FamilyPage />} />
             <Route path="/orders" element={<OrderPage />} />
             <Route path="/orders/select" element={<RecipeSelectPage />} />
@@ -50,6 +53,6 @@ export default function App() {
       </Routes>
       <Toaster />
       <UpdatePrompt />
-    </>
+    </ThemeProvider>
   )
 }

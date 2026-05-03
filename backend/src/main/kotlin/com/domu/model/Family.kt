@@ -17,5 +17,8 @@ class Family(
     var inviteCode: String = "",
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    val createdAt: Instant = Instant.now()
+    val createdAt: Instant = Instant.now(),
+
+    @Column(columnDefinition = "TEXT")
+    var deletedAt: Instant? = null
 )

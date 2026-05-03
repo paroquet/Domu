@@ -55,7 +55,7 @@ class OrderServiceTest {
 
     private val testUser1 = User(id = 1L, email = "user1@test.com", passwordHash = "h", name = "用户1")
     private val testUser2 = User(id = 2L, email = "user2@test.com", passwordHash = "h", name = "用户2")
-    private val testFamily = Family(id = 10L, name = "测试家庭", inviteCode = "ABC12345")
+    private val testFamily = Family(id = 10L, name = "测试家庭", inviteCode = "ABC12345", createdAt = java.time.Instant.now())
     private val testFamilyMember = FamilyMember(
         id = FamilyMemberId(10L, 1L),
         family = testFamily,

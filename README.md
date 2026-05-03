@@ -7,11 +7,11 @@
 
 Domu 来源拉丁语 Domus，意为“家/屋檐”。跟日语 "どうも - Doumo" 谐音，"Domu~ 饭好啦，趁热吃吧！"
 
-## quick start
+## Quick Start
 
 ```shell
 # 本地开发模式
-cd backend  
+cd backend
 ./gradlew bootRun --args='--spring.profiles.active=dev'
 
 # 运行测试：

@@ -128,12 +128,12 @@ export default function RecipeFormPage() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           返回
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">{isEdit ? '编辑菜谱' : '新建菜谱'}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{isEdit ? '编辑菜谱' : '新建菜谱'}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -181,7 +181,7 @@ export default function RecipeFormPage() {
           <CardContent className="space-y-3">
             {ingredients.map((ing, i) => (
               <div key={i} className="flex items-center gap-2">
-                <GripVertical className="h-4 w-4 text-gray-300 shrink-0" />
+                <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
                 <Input
                   placeholder="食材名称"
                   value={ing.name}
@@ -206,7 +206,7 @@ export default function RecipeFormPage() {
                   size="icon"
                   onClick={() => removeIngredient(i)}
                   disabled={ingredients.length === 1}
-                  className="shrink-0 text-gray-400 hover:text-red-500"
+                  className="shrink-0 text-muted-foreground hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -228,10 +228,10 @@ export default function RecipeFormPage() {
             {steps.map((step, i) => (
               <div key={i} className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">
+                  <div className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold shrink-0">
                     {i + 1}
                   </div>
-                  <span className="text-sm font-medium text-gray-700">步骤 {i + 1}</span>
+                  <span className="text-sm font-medium text-foreground/80">步骤 {i + 1}</span>
                   <div className="flex-1" />
                   <Button
                     type="button"
@@ -239,7 +239,7 @@ export default function RecipeFormPage() {
                     size="icon"
                     onClick={() => removeStep(i)}
                     disabled={steps.length === 1}
-                    className="h-7 w-7 text-gray-400 hover:text-red-500"
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -251,7 +251,7 @@ export default function RecipeFormPage() {
                   rows={2}
                 />
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-500">步骤图片（可选）</Label>
+                  <Label className="text-xs text-muted-foreground">步骤图片（可选）</Label>
                   <ImageUpload
                     value={step.imagePath}
                     onChange={(path) => updateStep(i, 'imagePath', path)}

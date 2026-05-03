@@ -1,14 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Users, Copy, Check, RefreshCw, Crown, UserMinus, Shield, ChevronsUpDown } from 'lucide-react'
+import { Users, Copy, Check, RefreshCw, Crown, UserMinus, Shield, ChevronsUpDown, Trash2 } from 'lucide-react'
 import {
   createFamily,
   getFamily,
+  getFamilyList,
   getFamilyMembers,
   joinFamily,
   regenerateInviteCode,
   updateMemberRole,
   removeMember,
+  deleteFamily,
 } from '@/api/family'
 import { useFamilyStore } from '@/stores/familyStore'
 import { useAuthStore } from '@/stores/authStore'
@@ -39,9 +41,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from '@/components/ui/use-toast'
 import { cn } from '@/lib/utils'
+import { copyTextToClipboard } from '@/lib/clipboard'
 
 export default function FamilyPage() {
-  const { currentFamilyId, families, setCurrentFamilyId } = useFamilyStore()
+  const { currentFamilyId, families, setCurrentFamilyId, setFamilies } = useFamilyStore()
   const { user } = useAuthStore()
   const queryClient = useQueryClient()
 
@@ -50,11 +53,23 @@ export default function FamilyPage() {
   const [copiedCode, setCopiedCode] = useState(false)
   const [localInviteCode, setLocalInviteCode] = useState<string | null>(null)
 
-  const { data: family, isLoading: familyLoading } = useQuery({
+  const { data: family, isLoading: familyLoading, isError, error } = useQuery({
     queryKey: ['family', currentFamilyId],
     queryFn: () => getFamily(currentFamilyId!),
     enabled: !!currentFamilyId,
+    retry: false,
   })
+
+  useEffect(() => {
+    if (isError && error && 'response' in error && (error as { response?: { status?: number } }).response?.status === 404) {
+      const otherFamily = families.find(f => f.id !== currentFamilyId)
+      if (otherFamily) {
+        setCurrentFamilyId(otherFamily.id)
+      } else {
+        setCurrentFamilyId(null)
+      }
+    }
+  }, [isError, error, families, currentFamilyId])
 
   const { data: members = [] } = useQuery({
     queryKey: ['family-members', currentFamilyId],
@@ -64,20 +79,22 @@ export default function FamilyPage() {
 
   const createMutation = useMutation({
     mutationFn: () => createFamily(createName.trim()),
-    onSuccess: (data) => {
-      setCurrentFamilyId(data.id)
+    onSuccess: (newFamily) => {
+      setFamilies([...families, { id: newFamily.id, name: newFamily.name }])
+      setCurrentFamilyId(newFamily.id)
       queryClient.invalidateQueries({ queryKey: ['family'] })
-      toast({ title: `家庭「${data.name}」创建成功` })
+      toast({ title: `家庭「${newFamily.name}」创建成功` })
     },
     onError: () => toast({ title: '创建失败', variant: 'destructive' }),
   })
 
   const joinMutation = useMutation({
     mutationFn: () => joinFamily(inviteCodeInput.trim()),
-    onSuccess: (data) => {
-      setCurrentFamilyId(data.id)
+    onSuccess: (joinedFamily) => {
+      setFamilies([...families, { id: joinedFamily.id, name: joinedFamily.name }])
+      setCurrentFamilyId(joinedFamily.id)
       queryClient.invalidateQueries({ queryKey: ['family'] })
-      toast({ title: `成功加入家庭「${data.name}」` })
+      toast({ title: `成功加入家庭「${joinedFamily.name}」` })
     },
     onError: () => toast({ title: '加入失败，邀请码无效', variant: 'destructive' }),
   })
@@ -111,17 +128,34 @@ export default function FamilyPage() {
     onError: () => toast({ title: '操作失败', variant: 'destructive' }),
   })
 
+  const deleteFamilyMutation = useMutation({
+    mutationFn: async () => {
+      await deleteFamily(currentFamilyId!)
+      // Refetch the family list from server (filters out soft-deleted families)
+      return getFamilyList()
+    },
+    onSuccess: (freshFamilies) => {
+      setFamilies(freshFamilies)
+      // If there are remaining families, switch to the first one; otherwise clear selection
+      setCurrentFamilyId(freshFamilies.length > 0 ? freshFamilies[0].id : null)
+      queryClient.invalidateQueries({ queryKey: ['family'] })
+      queryClient.invalidateQueries({ queryKey: ['family-members'] })
+      toast({ title: '家庭已删除' })
+    },
+    onError: () => toast({ title: '删除失败', variant: 'destructive' }),
+  })
+
   const currentUserMember = members.find((m) => m.userId === user?.id)
   const isAdmin = currentUserMember?.role === 'ADMIN'
   const inviteCode = localInviteCode ?? family?.inviteCode ?? ''
 
   const handleCopyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(inviteCode)
+    const ok = await copyTextToClipboard(inviteCode)
+    if (ok) {
       setCopiedCode(true)
       setTimeout(() => setCopiedCode(false), 2000)
-    } catch {
-      toast({ title: '复制失败', variant: 'destructive' })
+    } else {
+      toast({ title: '复制失败，请长按邀请码手动复制', variant: 'destructive' })
     }
   }
 
@@ -140,9 +174,9 @@ export default function FamilyPage() {
     return (
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center">
-          <Users className="h-16 w-16 text-gray-300 mx-auto mb-3" />
-          <h1 className="text-2xl font-bold text-gray-900">家庭管理</h1>
-          <p className="text-gray-500 mt-1">创建或加入一个家庭开始使用</p>
+          <Users className="h-16 w-16 text-muted-foreground mx-auto mb-3" />
+          <h1 className="text-2xl font-bold text-foreground">家庭管理</h1>
+          <p className="text-muted-foreground mt-1">创建或加入一个家庭开始使用</p>
         </div>
 
         <Tabs defaultValue="create">
@@ -212,58 +246,116 @@ export default function FamilyPage() {
   if (familyLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-32 bg-gray-100 rounded-xl animate-pulse" />
-        <div className="h-48 bg-gray-100 rounded-xl animate-pulse" />
+        <div className="h-32 bg-muted rounded-xl animate-pulse" />
+        <div className="h-48 bg-muted rounded-xl animate-pulse" />
       </div>
     )
   }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">家庭管理</h1>
+      <h1 className="text-2xl font-bold text-foreground">家庭管理</h1>
 
       {/* Family info */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-600" />
+              <Users className="h-4 w-4 text-primary" />
               {family?.name}
             </CardTitle>
-            {families.length > 1 && (
+            <div className="flex items-center gap-2">
+              {families.length > 1 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1">
+                      切换家庭
+                      <ChevronsUpDown className="h-3.5 w-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {families.map((f) => (
+                      <DropdownMenuItem
+                        key={f.id}
+                        onClick={() => handleFamilySwitch(f.id)}
+                        className={cn(f.id === currentFamilyId && 'bg-primary/10 text-primary')}
+                      >
+                        {f.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-1">
-                    切换家庭
-                    <ChevronsUpDown className="h-3.5 w-3.5" />
+                    <Users className="h-4 w-4" />
+                    创建家庭
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {families.map((f) => (
-                    <DropdownMenuItem
-                      key={f.id}
-                      onClick={() => handleFamilySwitch(f.id)}
-                      className={cn(f.id === currentFamilyId && 'bg-blue-50 text-blue-600')}
+                <DropdownMenuContent align="end" className="w-64">
+                  <div className="px-2 py-1.5 text-sm font-medium">创建新家庭</div>
+                  <div className="px-2 pb-2">
+                    <Input
+                      placeholder="家庭名称"
+                      value={createName}
+                      onChange={(e) => setCreateName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && createName.trim() && createMutation.mutate()}
+                    />
+                  </div>
+                  <div className="px-2 pb-2">
+                    <Button
+                      className="w-full"
+                      size="sm"
+                      onClick={() => createMutation.mutate()}
+                      disabled={!createName.trim() || createMutation.isPending}
                     >
-                      {f.name}
-                    </DropdownMenuItem>
-                  ))}
+                      {createMutation.isPending ? '创建中...' : '创建'}
+                    </Button>
+                  </div>
                 </DropdownMenuContent>
               </DropdownMenu>
-            )}
+              {isAdmin && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive gap-1">
+                      <Trash2 className="h-4 w-4" />
+                      删除家庭
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>删除家庭</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        确定要删除「{family?.name}」吗？此操作无法撤销，所有成员将无法再访问此家庭。
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>取消</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deleteFamilyMutation.mutate()}
+                        className="bg-destructive hover:bg-destructive/90"
+                      >
+                        删除
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
           </div>
           <CardDescription>{members.length} 位成员</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Separator />
           <div>
-            <Label className="text-xs text-gray-500 mb-2 block">邀请码</Label>
+            <Label className="text-xs text-muted-foreground mb-2 block">邀请码</Label>
             <div className="flex items-center gap-2">
-              <div className="flex-1 bg-gray-50 border border-gray-200 rounded-md px-3 py-2 font-mono text-sm tracking-widest text-gray-800">
+              <div className="flex-1 bg-muted border border-border rounded-md px-3 py-2 font-mono text-sm tracking-widest text-foreground">
                 {inviteCode}
               </div>
               <Button variant="outline" size="icon" onClick={handleCopyCode}>
-                {copiedCode ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                {copiedCode ? <Check className="h-4 w-4 text-[hsl(var(--success))]" /> : <Copy className="h-4 w-4" />}
               </Button>
               {isAdmin && (
                 <Button
@@ -277,7 +369,7 @@ export default function FamilyPage() {
                 </Button>
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-1">将邀请码分享给家庭成员，让他们加入</p>
+            <p className="text-xs text-muted-foreground mt-1">将邀请码分享给家庭成员，让他们加入</p>
           </div>
         </CardContent>
       </Card>
@@ -298,7 +390,7 @@ export default function FamilyPage() {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900">{member.name}</span>
+                    <span className="font-medium text-foreground">{member.name}</span>
                     {member.role === 'ADMIN' ? (
                       <Badge variant="default" className="text-xs px-1.5 py-0">
                         <Crown className="h-2.5 w-2.5 mr-0.5" />
@@ -311,7 +403,7 @@ export default function FamilyPage() {
                       <Badge variant="outline" className="text-xs px-1.5 py-0">我</Badge>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500 truncate">{member.email}</p>
+                  <p className="text-sm text-muted-foreground truncate">{member.email}</p>
                 </div>
 
                 {/* Admin actions */}
@@ -320,7 +412,7 @@ export default function FamilyPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-gray-400 hover:text-blue-600"
+                      className="h-8 w-8 text-muted-foreground hover:text-primary"
                       title={member.role === 'ADMIN' ? '降为成员' : '设为管理员'}
                       onClick={() =>
                         updateRoleMutation.mutate({
@@ -337,7 +429,7 @@ export default function FamilyPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-gray-400 hover:text-red-600"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
                           title="移出家庭"
                         >
                           <UserMinus className="h-4 w-4" />
@@ -354,7 +446,7 @@ export default function FamilyPage() {
                           <AlertDialogCancel>取消</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => removeMemberMutation.mutate(member.userId)}
-                            className="bg-red-500 hover:bg-red-600"
+                            className="bg-destructive hover:bg-destructive/90"
                           >
                             移出
                           </AlertDialogAction>
