@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { User, Clock, ChefHat } from 'lucide-react'
@@ -12,8 +13,9 @@ interface CookingRecordCardProps {
 
 export default function CookingRecordCard({ record, hideRecipeTitle = false }: CookingRecordCardProps) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
+    <Link to={`/cooking-records/${record.id}`} className="block">
+      <Card className="hover:shadow-md transition-shadow">
+        <CardContent className="p-4">
         <div className="flex gap-4">
           {record.images.length > 0 ? (
             <img
@@ -50,7 +52,8 @@ export default function CookingRecordCard({ record, hideRecipeTitle = false }: C
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   )
 }

@@ -21,6 +21,23 @@ export default defineConfig({
         icons: [
           { src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' }
         ]
+      },
+      workbox: {
+        runtimeCaching: [
+          {
+            // 用户上传图片：UUID 文件名，内容不可变，可长期缓存
+            urlPattern: ({ url }) => url.pathname.startsWith('/files/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'domu-uploads',
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 * 30
+              },
+              cacheableResponse: { statuses: [0, 200] }
+            }
+          }
+        ]
       }
     })
   ],
