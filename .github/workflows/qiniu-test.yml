@@ -1,0 +1,98 @@
+name: qiniu-probe
+
+# 临时实测：验证「海外 GitHub runner 上传大文件到七牛」这一跳是否快且稳。
+# 这是七牛中转方案成败的核心假设。验证通过后删除本 workflow。
+# 流程：runner 生成 200MB 假文件 → qshell rput 分片上传七牛 deepshape:registry/_probe/
+#       → privateurl 生成私有签名链接 → runner 回拉验证完整性。
+# 服务器侧下载速度用 Summary 里打印的 ssh 命令单独测（CDN cloud.deepshape.cn 已实测 0.15s 连通）。
+
+on:
+  workflow_dispatch:        # 只手动触发
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      QINIU_AK: ${{ secrets.QINIU_ACCESS_KEY }}
+      QINIU_SK: ${{ secrets.QINIU_SECRET_KEY }}
+      BUCKET: deepshape
+      KEY: registry/_probe/probe-${{ github.run_id }}.bin
+      DL_DOMAIN: https://cloud.deepshape.cn   # 私有 bucket 的绑定下载域名
+      QSHELL_VER: "2.19.7"
+    steps:
+      - name: 生成 200MB 假文件（模拟 image.tar 大小）
+        run: |
+          dd if=/dev/urandom of=probe.bin bs=1M count=200 status=none
+          ls -lh probe.bin
+          echo "src_sha=$(sha256sum probe.bin | cut -d' ' -f1)" >> "$GITHUB_ENV"
+
+      - name: 下载 qshell（七牛官方静态二进制，无依赖）
+        run: |
+          set -e
+          curl -fsSL -o qshell.tar.gz \
+            "https://github.com/qiniu/qshell/releases/download/v${QSHELL_VER}/qshell-v${QSHELL_VER}-linux-amd64.tar.gz"
+          tar xzf qshell.tar.gz
+          chmod +x qshell
+          ./qshell --version
+
+      - name: 配置 qshell 账号
+        run: ./qshell account "$QINIU_AK" "$QINIU_SK" deepshape-probe
+
+      - name: 分片上传到七牛（计时）
+        id: upload
+        run: |
+          set -e
+          echo "开始 rput 分片上传 200MB → qiniu://$BUCKET/$KEY"
+          START=$(date +%s.%N)
+          ./qshell rput "$BUCKET" "$KEY" probe.bin --overwrite
+          END=$(date +%s.%N)
+          ELAPSED=$(echo "$END - $START" | bc)
+          SPEED=$(echo "scale=2; 200 / $ELAPSED" | bc)
+          echo "✅ 上传耗时 ${ELAPSED}s，约 ${SPEED} MB/s"
+          echo "elapsed=$ELAPSED" >> "$GITHUB_OUTPUT"
+          echo "speed=$SPEED" >> "$GITHUB_OUTPUT"
+
+      - name: 生成私有签名下载链接
+        id: signurl
+        run: |
+          set -e
+          # privateurl <PublicUrl> [Deadline]；私有空间默认 1h 有效；输出到 stdout
+          SIGNED=$(./qshell privateurl "$DL_DOMAIN/$KEY")
+          echo "signed=$SIGNED" >> "$GITHUB_OUTPUT"
+          echo "签名链接已生成"
+
+      - name: runner 回拉验证可下载 + 完整性（计时）
+        run: |
+          set -e
+          SIGNED='${{ steps.signurl.outputs.signed }}'
+          [ -z "$SIGNED" ] && { echo "❌ 无签名链接"; exit 1; }
+          START=$(date +%s.%N)
+          curl -fsSL -o probe-dl.bin "$SIGNED"
+          END=$(date +%s.%N)
+          echo "回拉耗时 $(echo "$END - $START" | bc)s"
+          if [ "$src_sha" = "$(sha256sum probe-dl.bin|cut -d' ' -f1)" ]; then
+            echo "✅ sha256 一致，上传→下载链路完整"
+          else
+            echo "❌ sha256 不一致"; exit 1
+          fi
+
+      - name: 输出结果到 Summary
+        if: always()
+        run: |
+          {
+            echo "## 七牛中转实测结果"
+            echo ""
+            echo "- 上传 200MB 耗时: **${{ steps.upload.outputs.elapsed }}s**（约 ${{ steps.upload.outputs.speed }} MB/s）"
+            echo "- 文件 key: \`$BUCKET/$KEY\`"
+            echo ""
+            echo "### 在 deepshape 服务器上验证下载速度（链接 1h 有效）"
+            echo '```bash'
+            echo "ssh deepshape 'curl -fsSL -o /tmp/probe.bin \"${{ steps.signurl.outputs.signed }}\" -w \"server 下载耗时 %{time_total}s, 速度 %{speed_download} B/s\\n\"; rm -f /tmp/probe.bin'"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 清理七牛上的 probe 文件
+        if: always()
+        run: |
+          ./qshell delete "$BUCKET" "$KEY" 2>/dev/null || true
+          echo "已清理 $KEY"
