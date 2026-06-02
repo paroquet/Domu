@@ -1,5 +1,9 @@
+# base 镜像前缀：默认华为云 swr（墙内本机 build 刚需）；GHA 墙外 runner 传
+# --build-arg IMAGE_PREFIX= 切 docker.io 官方源。全局 ARG，仅在各 FROM 行使用。
+ARG IMAGE_PREFIX=swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/
+
 # Stage 1: Build frontend
-FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/node:22-alpine AS frontend
+FROM ${IMAGE_PREFIX}node:22-alpine AS frontend
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci
@@ -7,7 +11,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # Stage 2: Build backend
-FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/gradle:8.13-jdk21 AS backend
+FROM ${IMAGE_PREFIX}gradle:8.13-jdk21 AS backend
 WORKDIR /app
 COPY backend/ ./
 COPY --from=frontend /app/frontend/dist/ src/main/resources/static/
@@ -17,7 +21,7 @@ RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
     gradle bootJar --no-daemon -x test
 
 # Stage 3: Runtime image
-FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/eclipse-temurin:21-jre-alpine
+FROM ${IMAGE_PREFIX}eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 RUN addgroup -S domu && adduser -S domu -G domu
