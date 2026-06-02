@@ -47,9 +47,9 @@ jobs:
             IMAGE_PREFIX=
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # 用 GitHub Actions cache 缓存 BuildKit layer（npm ci / gradle deps），增量 build 提速
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # 不用 gha cache：cache export 跨境上传 ~108s，Domu build 本身不重，
+          # 省掉这份缓存负担更划算（Dockerfile 内 gradle/npm 仍走 BuildKit cache mount，
+          # 但只在同一次 runner 内有效，不跨 run 持久）。
 
       # Dokploy 现在还在本地（localhost control plane），墙外 runner 触发不到。
       # 所以这里只把「镜像已就绪 + 本地手动触发命令」打印到 Job Summary，
