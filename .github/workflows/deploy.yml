@@ -91,24 +91,23 @@ jobs:
           echo "signed=$SIGNED" >> "$GITHUB_OUTPUT"
 
       - name: Print server deploy command
+        shell: bash
+        env:
+          SIGNED: ${{ steps.signurl.outputs.signed }}
+          KEY: ${{ steps.upload.outputs.key }}
         run: |
+          DEPLOY_CMD="ssh deepshape 'bash ~/deepshape-stack/scripts/deploy-from-qiniu.sh \"${SIGNED}\" \"${IMAGE}:latest\" \"${IMAGE}:sha-${GITHUB_SHA}\"'"
           {
             echo "## ✅ 镜像已 build 并上传七牛"
             echo ""
-            echo "- tags: \`${IMAGE}:latest\` + \`${IMAGE}:sha-${GITHUB_SHA}\`"
-            echo "- 七牛 key: \`$BUCKET/${{ steps.upload.outputs.key }}\`"
+            echo "- tags: ${IMAGE}:latest + ${IMAGE}:sha-${GITHUB_SHA}"
+            echo "- 七牛 key: ${BUCKET}/${KEY}"
             echo "- 签名链接有效期 1h（过期重跑本 workflow）"
             echo ""
             echo "### 在 deepshape 服务器上一键部署"
-            echo "复制到本地终端执行。通用脚本 deploy-from-qiniu.sh 住在 deepshape-stack/scripts/，"
-            echo "多 server / 多项目复用同一份（下载→load→push TCR→触发 dokploy）："
+            echo "复制到本地终端执行（脚本住 deepshape-stack/scripts/，多 server 复用）："
             echo ""
-            echo '```bash'
-            echo "ssh deepshape 'bash ~/deepshape-stack/scripts/deploy-from-qiniu.sh \\"
-            echo "  \"${{ steps.signurl.outputs.signed }}\" \\"
-            echo "  \"${IMAGE}:latest\" \"${IMAGE}:sha-${GITHUB_SHA}\"'"
-            echo '```'
+            printf '~~~bash\n%s\n~~~\n' "$DEPLOY_CMD"
             echo ""
-            echo "> 前置（每台 server 一次性）：服务器有 deepshape-stack 仓；docker 已登录 TCR；"
-            echo "> dokploy webhook 配在 ~/.deploy-from-qiniu.env（见脚本头注释，dokploy 本地 PoC 时可不配）。"
+            echo "> 前置：服务器有 deepshape-stack 仓；docker 已登录 TCR；dokploy webhook 配 ~/.deploy-from-qiniu.env。"
           } >> "$GITHUB_STEP_SUMMARY"
