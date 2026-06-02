@@ -70,7 +70,8 @@ jobs:
           set -e
           KEY="registry/domu/${GITHUB_SHA}.tar.gz"
           echo "key=$KEY" >> "$GITHUB_OUTPUT"
-          ./qshell account "$QINIU_AK" "$QINIU_SK" domu-deploy
+          # --overwrite 幂等：重跑 workflow 时账号已存在也不报错
+          ./qshell account "$QINIU_AK" "$QINIU_SK" domu-deploy --overwrite
           echo "上传 → qiniu://$BUCKET/$KEY"
           START=$(date +%s.%N)
           ./qshell rput "$BUCKET" "$KEY" domu-image.tar.gz --overwrite
@@ -84,7 +85,7 @@ jobs:
           QINIU_SK: ${{ secrets.QINIU_SECRET_KEY }}
         run: |
           set -e
-          ./qshell account "$QINIU_AK" "$QINIU_SK" domu-deploy >/dev/null
+          # 账号已在「上传」步骤配过（同 job 内 qshell 配置持久化），无需重复 account
           # privateurl 默认 1h 有效；镜像 tar 下载用足够，过期重跑 workflow
           SIGNED=$(./qshell privateurl "$DL_DOMAIN/${{ steps.upload.outputs.key }}")
           echo "signed=$SIGNED" >> "$GITHUB_OUTPUT"
