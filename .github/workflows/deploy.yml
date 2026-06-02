@@ -1,4 +1,9 @@
-name: build-and-deploy
+name: build-image
+
+# 海外 GitHub runner 跨境 push 国内 TCR 会卡死（TCR personal 版跨境写入不可靠，
+# 同 deepshape-stack 记录的 pull 端问题）。所以这里 runner 只负责 build，把镜像
+# 导出成 tar 上传成 artifact；由本地（墙内）下载 → docker load → push TCR（同区快）
+# → 触发 dokploy。跨境只发生在「下载 artifact」这一跳，可达性远好于直 push TCR。
 
 on:
   push:
@@ -6,11 +11,14 @@ on:
   workflow_dispatch:        # 允许在 Actions 页手动触发
 
 concurrency:                # 同分支新 push 取消正在跑的旧 build
-  group: deploy-${{ github.ref }}
+  group: build-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  IMAGE: ccr.ccs.tencentyun.com/o-pq/domu
+
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,60 +26,59 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to TCR
-        uses: docker/login-action@v3
-        with:
-          registry: ccr.ccs.tencentyun.com
-          username: ${{ secrets.TCR_USERNAME }}
-          password: ${{ secrets.TCR_PASSWORD }}
-
-      # 生成 tags：:latest（dokploy 默认 pull）+ :sha-<短commit>（可追溯/回滚）
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ccr.ccs.tencentyun.com/o-pq/domu
-          tags: |
-            type=raw,value=latest
-            type=sha,prefix=sha-
-
-      - name: Build and push
-        id: build
+      # build 出镜像并存进本地 docker daemon（load: true），不 push 任何 registry。
+      # 双 tag：:latest（dokploy 默认 pull）+ :sha-<短commit>（可追溯/回滚）。
+      - name: Build image (load into daemon)
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          push: true
+          load: true
           # 空前缀 → 走 docker.io 官方源（墙外 runner，比华为云 swr 快/稳）
           build-args: |
             IMAGE_PREFIX=
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          # 不用 gha cache：cache export 跨境上传 ~108s，Domu build 本身不重，
-          # 省掉这份缓存负担更划算（Dockerfile 内 gradle/npm 仍走 BuildKit cache mount，
-          # 但只在同一次 runner 内有效，不跨 run 持久）。
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:sha-${{ github.sha }}
 
-      # Dokploy 现在还在本地（localhost control plane），墙外 runner 触发不到。
-      # 所以这里只把「镜像已就绪 + 本地手动触发命令」打印到 Job Summary，
-      # 你复制到本地终端跑，由本地 dokploy 重新 pull :latest 并 redeploy。
-      # 等 dokploy 迁到云端有公网域名后，再把这步换成直接 curl webhook。
-      - name: Print local deploy command
+      # 把两个 tag 一次性 save 进同一个 tar（docker save 支持多 tag 共享层）。
+      - name: Export image to tar
+        run: |
+          docker save \
+            "${IMAGE}:latest" \
+            "${IMAGE}:sha-${GITHUB_SHA}" \
+            -o domu-image.tar
+          ls -lh domu-image.tar
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: domu-image
+          path: domu-image.tar
+          retention-days: 7      # tar 较大，7 天后自动清理省空间
+
+      - name: Print local deploy instructions
         run: |
           {
-            echo "## ✅ 镜像已 push 到 TCR"
+            echo "## ✅ 镜像已 build 完，导出为 artifact \`domu-image\`"
             echo ""
-            echo '```'
-            echo "${{ steps.meta.outputs.tags }}"
-            echo '```'
+            echo "tags: \`${IMAGE}:latest\` + \`${IMAGE}:sha-${GITHUB_SHA}\`"
             echo ""
-            echo "digest: \`${{ steps.build.outputs.digest }}\`"
-            echo ""
-            echo "### 本地触发 Dokploy 部署"
-            echo "在本地终端跑（DOKPLOY_DEPLOY_WEBHOOK 换成 Dokploy UI → Domu → Deployments 里的 webhook URL）："
+            echo "### 本地（墙内）部署步骤"
             echo ""
             echo '```bash'
+            echo "# 1. 下载本次 build 的镜像 tar（需要 gh CLI 已登录）"
+            echo "gh run download ${{ github.run_id }} -R ${{ github.repository }} -n domu-image"
+            echo ""
+            echo "# 2. load 进本地 docker"
+            echo "docker load -i domu-image.tar"
+            echo ""
+            echo "# 3. push 到 TCR（本地墙内，同区快；需先 docker login ccr.ccs.tencentyun.com）"
+            echo "docker push ${IMAGE}:latest"
+            echo "docker push ${IMAGE}:sha-${GITHUB_SHA}"
+            echo ""
+            echo "# 4. 触发 dokploy 重新 pull :latest 并 redeploy"
+            echo "#    DOKPLOY_DEPLOY_WEBHOOK = Dokploy UI → Domu → Deployments 里的 webhook URL"
             echo 'curl -fsS -X POST "$DOKPLOY_DEPLOY_WEBHOOK"'
             echo '```'
-            echo ""
-            echo "Dokploy 会重新 pull \`ccr.ccs.tencentyun.com/o-pq/domu:latest\` 并滚动 redeploy。"
           } >> "$GITHUB_STEP_SUMMARY"
