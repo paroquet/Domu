@@ -27,6 +27,3 @@ frontend/*.tsbuildinfo
 # OS
 .DS_Store
 Thumbs.db
-
-# 服务器部署 webhook 配置（含 token，不进 git）
-scripts/.deploy-env
