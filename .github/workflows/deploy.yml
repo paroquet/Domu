@@ -1,9 +1,12 @@
 name: build-image
 
 # 海外 GitHub runner 跨境 push 国内 TCR 会卡死（TCR personal 版跨境写入不可靠，
-# 同 deepshape-stack 记录的 pull 端问题）。所以这里 runner 只负责 build，把镜像
-# 导出成 tar 上传成 artifact；由本地（墙内）下载 → docker load → push TCR（同区快）
-# → 触发 dokploy。跨境只发生在「下载 artifact」这一跳，可达性远好于直 push TCR。
+# 同 deepshape-stack 记录的 pull 端问题）。改为七牛中转：
+#   runner（墙外）build → docker save tar → 上传七牛 deepshape:registry/domu/
+#   → 打印「服务器一键部署命令」到 Summary
+#   → 你 ssh 到 deepshape 服务器跑 scripts/deploy-from-qiniu.sh：
+#        七牛下载（墙内同区，秒级）→ docker load → push TCR（同区）→ 触发 dokploy
+# 跨境只发生在「上传七牛」这一跳，实测 200MB 22s/8.9MB·s⁻¹ 稳定不卡（对比 TCR 直 push 卡死 20min）。
 
 on:
   push:
@@ -16,6 +19,9 @@ concurrency:                # 同分支新 push 取消正在跑的旧 build
 
 env:
   IMAGE: ccr.ccs.tencentyun.com/o-pq/domu
+  BUCKET: deepshape
+  DL_DOMAIN: https://cloud.deepshape.cn   # 七牛私有 bucket 绑定的下载域名
+  QSHELL_VER: "2.19.7"
 
 jobs:
   build:
@@ -26,8 +32,8 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # build 出镜像并存进本地 docker daemon（load: true），不 push 任何 registry。
-      # 双 tag：:latest（dokploy 默认 pull）+ :sha-<短commit>（可追溯/回滚）。
+      # build 出镜像并 load 进本地 docker daemon（不 push 任何 registry）。
+      # 双 tag：:latest（dokploy 默认 pull）+ :sha-<commit>（可追溯/回滚）。
       - name: Build image (load into daemon)
         uses: docker/build-push-action@v6
         with:
@@ -41,44 +47,66 @@ jobs:
             ${{ env.IMAGE }}:latest
             ${{ env.IMAGE }}:sha-${{ github.sha }}
 
-      # 把两个 tag 一次性 save 进同一个 tar（docker save 支持多 tag 共享层）。
-      - name: Export image to tar
+      # save 两个 tag 进同一个 tar（共享层），gzip 压缩减小上传体积。
+      - name: Export image to tar.gz
         run: |
-          docker save \
-            "${IMAGE}:latest" \
-            "${IMAGE}:sha-${GITHUB_SHA}" \
-            -o domu-image.tar
-          ls -lh domu-image.tar
+          docker save "${IMAGE}:latest" "${IMAGE}:sha-${GITHUB_SHA}" | gzip > domu-image.tar.gz
+          ls -lh domu-image.tar.gz
 
-      - name: Upload image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: domu-image
-          path: domu-image.tar
-          retention-days: 7      # tar 较大，7 天后自动清理省空间
+      - name: 下载 qshell
+        run: |
+          set -e
+          curl -fsSL -o qshell.tar.gz \
+            "https://github.com/qiniu/qshell/releases/download/v${QSHELL_VER}/qshell-v${QSHELL_VER}-linux-amd64.tar.gz"
+          tar xzf qshell.tar.gz
+          chmod +x qshell
 
-      - name: Print local deploy instructions
+      - name: 上传镜像到七牛（计时）
+        id: upload
+        env:
+          QINIU_AK: ${{ secrets.QINIU_ACCESS_KEY }}
+          QINIU_SK: ${{ secrets.QINIU_SECRET_KEY }}
+        run: |
+          set -e
+          KEY="registry/domu/${GITHUB_SHA}.tar.gz"
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+          ./qshell account "$QINIU_AK" "$QINIU_SK" domu-deploy
+          echo "上传 → qiniu://$BUCKET/$KEY"
+          START=$(date +%s.%N)
+          ./qshell rput "$BUCKET" "$KEY" domu-image.tar.gz --overwrite
+          END=$(date +%s.%N)
+          echo "✅ 上传耗时 $(echo "$END - $START" | bc)s"
+
+      - name: 生成私有签名下载链接
+        id: signurl
+        env:
+          QINIU_AK: ${{ secrets.QINIU_ACCESS_KEY }}
+          QINIU_SK: ${{ secrets.QINIU_SECRET_KEY }}
+        run: |
+          set -e
+          ./qshell account "$QINIU_AK" "$QINIU_SK" domu-deploy >/dev/null
+          # privateurl 默认 1h 有效；镜像 tar 下载用足够，过期重跑 workflow
+          SIGNED=$(./qshell privateurl "$DL_DOMAIN/${{ steps.upload.outputs.key }}")
+          echo "signed=$SIGNED" >> "$GITHUB_OUTPUT"
+
+      - name: Print server deploy command
         run: |
           {
-            echo "## ✅ 镜像已 build 完，导出为 artifact \`domu-image\`"
+            echo "## ✅ 镜像已 build 并上传七牛"
             echo ""
-            echo "tags: \`${IMAGE}:latest\` + \`${IMAGE}:sha-${GITHUB_SHA}\`"
+            echo "- tags: \`${IMAGE}:latest\` + \`${IMAGE}:sha-${GITHUB_SHA}\`"
+            echo "- 七牛 key: \`$BUCKET/${{ steps.upload.outputs.key }}\`"
+            echo "- 签名链接有效期 1h（过期重跑本 workflow）"
             echo ""
-            echo "### 本地（墙内）部署步骤"
+            echo "### 在 deepshape 服务器上一键部署"
+            echo "复制到本地终端执行（脚本会下载→load→push TCR→触发 dokploy）："
             echo ""
             echo '```bash'
-            echo "# 1. 下载本次 build 的镜像 tar（需要 gh CLI 已登录）"
-            echo "gh run download ${{ github.run_id }} -R ${{ github.repository }} -n domu-image"
-            echo ""
-            echo "# 2. load 进本地 docker"
-            echo "docker load -i domu-image.tar"
-            echo ""
-            echo "# 3. push 到 TCR（本地墙内，同区快；需先 docker login ccr.ccs.tencentyun.com）"
-            echo "docker push ${IMAGE}:latest"
-            echo "docker push ${IMAGE}:sha-${GITHUB_SHA}"
-            echo ""
-            echo "# 4. 触发 dokploy 重新 pull :latest 并 redeploy"
-            echo "#    DOKPLOY_DEPLOY_WEBHOOK = Dokploy UI → Domu → Deployments 里的 webhook URL"
-            echo 'curl -fsS -X POST "$DOKPLOY_DEPLOY_WEBHOOK"'
+            echo "ssh deepshape 'cd ~/Domu 2>/dev/null && git pull || git clone git@github.com:paroquet/Domu.git ~/Domu; \\"
+            echo "  bash ~/Domu/scripts/deploy-from-qiniu.sh \\"
+            echo "    \"${{ steps.signurl.outputs.signed }}\" \\"
+            echo "    \"${IMAGE}:latest\" \"${IMAGE}:sha-${GITHUB_SHA}\"'"
             echo '```'
+            echo ""
+            echo "> DOKPLOY_DEPLOY_WEBHOOK 需在服务器 ~/Domu/scripts/.deploy-env 里配置（见脚本头注释）。"
           } >> "$GITHUB_STEP_SUMMARY"
